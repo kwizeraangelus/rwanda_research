@@ -27,7 +27,7 @@ const PublicationCard: React.FC<Publication> = ({ id, title, authors, descriptio
 
   return (
     <Link
-      href={`/book/${id}`}
+      href={`/books/${id}`}
       className="group bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden cursor-pointer block"
     >
       {/* Cover Image */}

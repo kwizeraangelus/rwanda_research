@@ -8,7 +8,7 @@ from rest_framework import generics
 from .serializers import UploadSerializer
 from profiles.models import ResearcherProfile
 from rest_framework.decorators import api_view, permission_classes
-from .serializers import BookDetailSerializer
+from .serializers import BookDetailSerializer,PublicUploadSerializer
 
 class UploadCreateView(APIView):
     permission_classes = [IsAuthenticated]
@@ -97,8 +97,10 @@ def public_book_detail(request, pk):
 @permission_classes([AllowAny])
 def public_innovation_detail(request, pk):
     try:
-        upload = Upload.objects.get(pk=pk, status='approved')
+        upload = Upload.objects.get(pk=pk) 
     except Upload.DoesNotExist:
         return Response(status=404)
-    serializer = PublicUploadSerializer(upload)
+        
+    # 🛑 CRITICAL FIX: Pass context={'request': request} 🛑
+    serializer = PublicUploadSerializer(upload, context={'request': request}) 
     return Response(serializer.data)

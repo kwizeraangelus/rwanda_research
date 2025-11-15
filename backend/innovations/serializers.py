@@ -50,7 +50,7 @@ class BookDetailSerializer(serializers.ModelSerializer):
 
 
 class BookSerializer(serializers.ModelSerializer):
-    authors = serializers.CharField(source='user.get_full_name', read_only=True)
+    authors = serializers.CharField(source='user.get_username', read_only=True)
     # OR if no user:
     # authors = serializers.SerializerMethodField()
 
@@ -65,10 +65,9 @@ class BookSerializer(serializers.ModelSerializer):
 
 class PublicUploadSerializer(serializers.ModelSerializer):
  file_url = serializers.FileField(source='file', read_only=True)
-    
  cover_image = serializers.ImageField(read_only=True)
 
-class Meta:
+ class Meta:
         model = Upload
         fields = [
             'id',
