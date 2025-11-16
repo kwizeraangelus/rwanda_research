@@ -75,6 +75,7 @@ class PublicUploadSerializer(serializers.ModelSerializer):
             'authors',        # now correct
             'description',
             'cover_image',   # full URL
-            'file_url',      # full URL
+            'file_url', 
+            'status',     # full URL
             # add any other field you want (year, university, etc.)
         ]

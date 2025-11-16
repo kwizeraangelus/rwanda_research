@@ -12,3 +12,19 @@ def public_events(request):
     events = Event.objects.filter(date__gte=timezone.now()).order_by('date')
     serializer = EventSerializer(events, many=True)
     return Response(serializer.data)
+
+
+
+
+
+
+
+
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def event_list(request):
+    events = Event.objects.all().order_by('date')
+    serializer = EventSerializer(events, many=True)
+    return Response(serializer.data)

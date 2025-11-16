@@ -6,8 +6,10 @@ class Event(models.Model):
     description = models.TextField()
     date = models.DateTimeField()
     location = models.CharField(max_length=200)
+    icon = models.CharField(max_length=50, default='Calendar')
     link = models.URLField(
         blank=True, 
         null=True, 
         help_text="Direct link to event page (e.g. Eventbrite, Zoom, Google Form)"
+    
     )

@@ -97,7 +97,7 @@ def public_book_detail(request, pk):
 @permission_classes([AllowAny])
 def public_innovation_detail(request, pk):
     try:
-        upload = Upload.objects.get(pk=pk) 
+        upload = Upload.objects.get(pk=pk, status='approved') 
     except Upload.DoesNotExist:
         return Response(status=404)
         
