@@ -245,9 +245,9 @@ export default function HomePage() {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen text-gray-800">
+    <div className="bg-gradient-to-b from-[#4a772e] to-[#8c9c6f] text-white py-16">
       {/* NAV */}
-      <nav className="sticky top-0 w-full bg-[#4a772e] shadow-xl z-50">
+      <nav className="bg-gradient-to-b from-[#4a772e] to-[#8c9c6f] text-white py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             <div className="flex-shrink-0 text-2xl font-extrabold text-green-700 tracking-wider">
@@ -301,7 +301,7 @@ export default function HomePage() {
                 The national platform for discovery, publication, and collaboration.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 mb-10">
-                <a href="/submit-research" className="bg-green-700 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:bg-green-800 transition transform hover:scale-105 text-center">
+                <a href="/submit-research" className="bg-green-700 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:bg-green-850 transition transform hover:scale-105 text-center">
                   Publish Your Research
                 </a>
                 <a href="/publications" className="bg-teal-500 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:bg-teal-600 transition transform hover:scale-105 flex items-center justify-center">
@@ -352,9 +352,9 @@ export default function HomePage() {
       </section>
 
       {/* VIDEO */}
-      <section className="py-16 bg-[#4a772e] text-white">
+      <section className="pt-8 pb-16 bg-[#e1fcd1] shadow-inner">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-2xl sm:text-3xl font-light italic text-center max-w-4xl mx-auto mb-12">
+          <p className="text-2xl sm:text-3xl font-dark italic text-center max-w-4xl mx-auto mb-12">
             "Innovation drives knowledge, knowledge drives Rwanda."
           </p>
           <div className="w-full max-w-5xl mx-auto rounded-xl overflow-hidden shadow-2xl relative pb-[56.25%] h-0">
@@ -371,7 +371,7 @@ export default function HomePage() {
       </section>
 
       {/* FOOTER */}
-      <footer id="about" className="bg-gray-900 text-gray-300 py-12">
+      <footer id="about" className="bg-slate-700 text-slate-200 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 md:grid-cols-4 gap-8">
           <div>
             <h3 className="text-xl font-bold text-white mb-4">RWANDA RESEARCH HUB</h3>
