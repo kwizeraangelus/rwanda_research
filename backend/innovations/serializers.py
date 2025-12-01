@@ -6,16 +6,58 @@ from .models import Upload
 
 class UploadSerializer(serializers.ModelSerializer):
     file_url = serializers.SerializerMethodField()
-    cover_url = serializers.SerializerMethodField()
+
     
 
     class Meta:
         model = Upload
-        fields = '__all__'
+        fields = [
+            'id',
+            'submission_type',
+            'university',
+            'title',
+            'authors',
+            'year',
+            'description',
+            'supervisor_name',
+            'file',
+            'file_url',
+            'status',
+            'degree_type',
+            
+            'feedback',
+            'uploaded_at']
         read_only_fields = ['user', 'status', 'uploaded_at']
 
+    def validate_submission_type(self, value):
+        if not value:
+            raise serializers.ValidationError("This field is required.")
+
+        value = value.strip().lower()
+        if '-' not in value:
+            raise serializers.ValidationError(
+                "Invalid format. Use: thesis-law or dissertation-medicine"
+            )
+
+        degree, field = value.split('-', 1)
+        if degree not in ['thesis', 'dissertation']:
+            raise serializers.ValidationError(
+                "First part must be 'thesis' or 'dissertation'"
+            )
+        if not field.strip():
+            raise serializers.ValidationError("Field of study cannot be empty")
+
+        # Clean and return
+        return f"{degree}-{field.strip().replace(' ', '_')}"
+
+    def validate(self, data):
+        # Extra safety
+        if 'submission_type' in data:
+            data['submission_type'] = self.validate_submission_type(data['submission_type'])
+        return data
+
     def get_file_url(self, obj): return obj.file.url
-    def get_cover_url(self, obj): return obj.cover_image.url
+
 
 
 

@@ -14,15 +14,23 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "http",
-        hostname: "127.0.0.1", // Explicitly allowing IPv4 loopback
+        hostname: "127.0.0.1",
         port: "8000",
         pathname: "/media/**",
       },
       {
         protocol: "http",
-        hostname: "::1", // Explicitly allowing IPv6 loopback
+        hostname: "::1",
         port: "8000",
         pathname: "/media/**",
+      },
+
+      // ⭐ ADD UNSPLASH SUPPORT
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+        port: "",
+        pathname: "/**",
       },
     ],
   },

@@ -9,4 +9,6 @@ urlpatterns = [
        path('innovations/public-list/',views.PublicationListAPIView.as_view()),
        path('book/<int:pk>/', views.public_book_detail),
        path('innovations/public-detail/<int:pk>/', views.public_innovation_detail, name='public_innovation_detail'),
+       path('innovations/public-list/', views.PublicPublicationList.as_view(), name='public-list'),
+      path('innovations/public-counts/', views.public_counts, name='public-counts'),
 ]
