@@ -121,3 +121,107 @@ class PublicUploadSerializer(serializers.ModelSerializer):
             'status',     # full URL
             # add any other field you want (year, university, etc.)
         ]
+
+
+
+
+
+
+
+
+
+
+
+
+
+class UploadSerializers(serializers.ModelSerializer):
+    file_url = serializers.SerializerMethodField()
+    cover_image = serializers.SerializerMethodField()
+    user_id = serializers.CharField(source='user.pk', read_only=True)
+    
+    # Human-readable status
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    
+    # Optional: include category_display if you want to use it on frontend
+    category_display = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = Upload
+        fields = [
+        'user_id',
+            'id',
+            'title',
+            'authors',
+            'year',
+            'description',
+            'cover_image',
+            'file_url',
+            'status',
+            'status_display',
+            'supervisor_name',
+            'submission_type',
+            'university',
+            'uploaded_at',
+            'user',              
+            'category_display',
+        ]
+        read_only_fields = ['uploaded_at', 'user', 'status_display', 'category_display']
+
+    def get_file_url(self, obj):
+        if obj.file:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.file.url)
+            return obj.file.url
+        return None
+
+    def get_cover_image(self, obj):
+        if obj.cover_image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.cover_image.url)
+            return obj.cover_image.url
+        return None
+    
+
+
+
+
+
+
+
+
+# serializers.py  ← MUST HAVE THIS
+
+class BookDetailSerializers(serializers.ModelSerializer):
+    cover_image = serializers.SerializerMethodField()
+    file_url = serializers.SerializerMethodField()
+    user_id = serializers.CharField(source='user.pk', read_only=True)  # ← THIS IS THE KEY!
+
+    class Meta:
+        model = Upload
+        fields = [
+            'id',
+            'title',
+            'authors',
+            'year',
+            'description',
+            'cover_image',
+            'file_url',
+            'submission_type',
+            'university',
+            'supervisor_name',
+            'user_id',        # ← MUST BE IN FIELDS!
+        ]
+
+    def get_cover_image(self, obj):
+        if obj.cover_image:
+            request = self.context.get('request')
+            return request.build_absolute_uri(obj.cover_image.url)
+        return None
+
+    def get_file_url(self, obj):
+        if obj.file:
+            request = self.context.get('request')
+            return request.build_absolute_uri(obj.file.url)
+        return None

@@ -5,10 +5,11 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.decorators import api_view, permission_classes
 from .models import CustomUser
-from .serializers import UserProfileSerializer
+from .serializers import *
 from django.conf import settings
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny,IsAuthenticated
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
@@ -32,8 +33,15 @@ class RegisterView(APIView):
 
 
 # users/views.py
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import authenticate
+
 class LoginView(APIView):
     permission_classes = [AllowAny]
+
     def post(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
@@ -52,17 +60,21 @@ class LoginView(APIView):
 
         refresh = RefreshToken.for_user(user)
 
-        redirect_to = '/visitor'
-        if user.is_staff:
-            redirect_to = '/admin-dashboard'
-        elif user.user_category == 'researcher':
-            redirect_to = '/researcher'
-        elif user.user_category == 'university':
-            redirect_to = '/university'
-        elif user.user_category == 'conf_organizer':
-            redirect_to = '/organizer'
-        elif user.user_category == 'admin':
-            redirect_to = '/admin'
+        # GET WHERE THEY WANTED TO GO (from frontend)
+        redirect_to = request.data.get('next', '/visitor')  # ← THIS IS THE KEY
+
+        # Only override for non-public users
+        if user.user_category != 'public_visitor':
+            if user.is_staff:
+                redirect_to = '/admin-dashboard'
+            elif user.user_category == 'researcher':
+                redirect_to = '/researcher'
+            elif user.user_category == 'university':
+                redirect_to = '/university'
+            elif user.user_category == 'conf_organizer':
+                redirect_to = '/organizer'
+            elif user.user_category == 'admin':
+                redirect_to = '/admin'
 
         response = Response({
             'message': 'Login successful',
@@ -76,21 +88,57 @@ class LoginView(APIView):
             }
         }, status=200)
 
-        response.set_cookie(
-            key='access_token',
-            value=str(refresh.access_token),
-            httponly=True,
-            secure=False,
-            samesite='Lax',
-            max_age=3600
-        )
-        response.set_cookie(
-            key='refresh_token',
-            value=str(refresh),
-            httponly=True,
-            secure=False,
-            samesite='Lax',
-            max_age=7*24*3600
-        )
+        response.set_cookie('access_token', str(refresh.access_token), httponly=True, samesite='Lax', max_age=3600)
+        response.set_cookie('refresh_token', str(refresh), httponly=True, samesite='Lax', max_age=7*24*3600)
 
         return response
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def signup_view(request):
+    serializer = SignupSerializer(data=request.data)
+    if serializer.is_valid():
+        user = serializer.save()
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+            'user': UserProfileSerializer(user).data
+        }, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def login_view(request):
+    serializer = LoginSerializer(data=request.data)
+    if serializer.is_valid():
+        user = authenticate(username=serializer.validated_data['username'], password=serializer.validated_data['password'])
+        if user:
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+                'user': UserProfileSerializer(user).data
+            })
+        return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def profile_view(request):
+    return Response(UserProfileSerializer(request.user).data)

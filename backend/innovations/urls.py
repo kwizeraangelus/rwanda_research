@@ -6,9 +6,18 @@ urlpatterns = [
    path('upload/', views.UploadCreateView.as_view()),
     path('my-uploads/', views.MyUploadsView.as_view()),
     path('book/<int:pk>/', views.book_detail, name='book-detail'),
-       path('innovations/public-list/',views.PublicationListAPIView.as_view()),
+
        path('book/<int:pk>/', views.public_book_detail),
-       path('innovations/public-detail/<int:pk>/', views.public_innovation_detail, name='public_innovation_detail'),
-       path('innovations/public-list/', views.PublicPublicationList.as_view(), name='public-list'),
+      
+
       path('innovations/public-counts/', views.public_counts, name='public-counts'),
+    
+
+
+
+
+
+
+      path('innovations/public-list/', views.PublicUploadListAPIView.as_view(), name='public-list'),
+      path('innovations/public-detail/<int:pk>/', views.PublicInnovationDetailAPIView.as_view(), name='public_innovation_detail'),
 ]

@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'django_filters',
     'corsheaders',
     'rest_framework_simplejwt',
     'users',
@@ -54,6 +55,9 @@ INSTALLED_APPS = [
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
     ),}
 
 # backend/settings.py
@@ -186,6 +190,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+
+# THIS IS THE KEY LINE — ALLOWS PDF TO LOAD IN IFRAME
+SECURE_CROSS_ORIGIN_OPENER_POLICY = None
+
+# Also add this to allow media files in iframe
+X_FRAME_OPTIONS = 'SAMEORIGIN'
+
+# Make sure media files are served in development
+if DEBUG:
+    from corsheaders.defaults import default_headers
+    CORS_ALLOW_HEADERS = list(default_headers) + [
+        'content-type',
+    ]
 
 
 

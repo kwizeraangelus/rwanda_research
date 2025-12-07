@@ -358,7 +358,7 @@ export default function ResearcherDashboard() {
                   <div key={upload.id} onClick={() => router.push(`/book/${upload.id}`)} className="cursor-pointer group transform transition-all hover:scale-105">
                     <div className="rounded-2xl overflow-hidden shadow-xl border-2 border-blue-200 bg-blue-50">
                       <div className="h-64 bg-white flex flex-col items-center justify-center border-b-2 border-gray-100">
-                        <span className="text-9xl text-gray-300">Graduation Cap</span>
+                        <span className="text-9xl text-gray-300">🎓</span>
                         <p className="text-2xl font-medium text-gray-500 mt-4 tracking-wider">THESIS</p>
                       </div>
                       <div className={`absolute top-4 right-4 px-5 py-2 rounded-full text-sm font-bold text-white shadow-lg ${getStatusBadge(upload.status)}`}>

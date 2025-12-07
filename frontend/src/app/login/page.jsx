@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -27,8 +27,14 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (res.ok) {
-        // REDIRECT BASED ON USER TYPE
-        router.push(data.redirect);
+        // CHECK WHERE THEY WANTED TO GO
+        const intendedPath = localStorage.getItem('intendedPath');
+        if (intendedPath) {
+          localStorage.removeItem('intendedPath');
+          window.location.assign(intendedPath);  // ← GO TO THE BOOK
+        } else {
+          window.location.assign('/visitor');
+        }
       } else {
         setError(data.error || 'Login failed');
       }

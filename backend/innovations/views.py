@@ -4,13 +4,15 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import viewsets
 from rest_framework.parsers import MultiPartParser, FormParser
 from .models import Upload
 from rest_framework import generics
 from .serializers import UploadSerializer
 from profiles.models import ResearcherProfile
 from rest_framework.decorators import api_view, permission_classes
-from .serializers import BookDetailSerializer,PublicUploadSerializer
+from .serializers import BookDetailSerializer,PublicUploadSerializer,UploadSerializers,BookDetailSerializers
 
 class UploadCreateView(APIView):
     permission_classes = [IsAuthenticated]
@@ -211,3 +213,42 @@ def public_innovation_detail(request, pk):
     # 🛑 CRITICAL FIX: Pass context={'request': request} 🛑
     serializer = PublicUploadSerializer(upload, context={'request': request}) 
     return Response(serializer.data)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class PublicUploadListAPIView(generics.ListAPIView):
+    serializer_class = UploadSerializers
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        queryset = Upload.objects.filter(status='approved').order_by('-uploaded_at')
+        user_id = self.request.query_params.get('user')
+        if user_id is not None:
+            queryset = queryset.filter(user_id=user_id)  # ← UUID works!
+        return queryset
+
+
+# DETAIL: /api/innovations/public-detail/16/
+class PublicInnovationDetailAPIView(generics.RetrieveAPIView):
+    queryset = Upload.objects.filter(status='approved')
+    serializer_class = BookDetailSerializers   # ← has user_id
+    permission_classes = [AllowAny]
+    lookup_field = 'pk'
