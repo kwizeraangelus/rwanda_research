@@ -130,6 +130,7 @@ CORS_ALLOW_HEADERS = [
 
 
 MIDDLEWARE = [
+     
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -139,6 +140,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+CSRF_COOKIE_SAMESITE = "Lax"   # good for localhost
+SESSION_COOKIE_SAMESITE = "Lax"
 
 ROOT_URLCONF = 'backend.urls'
 
@@ -183,6 +186,13 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
+
+
+
+CORS_ALLOW_ALL_ORIGINS = True  # Use this for development
+
+# If you're using CSRF tokens
+CORS_ALLOW_CREDENTIALS = True
 import os
 from pathlib import Path
 
@@ -194,8 +204,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # THIS IS THE KEY LINE — ALLOWS PDF TO LOAD IN IFRAME
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 
-# Also add this to allow media files in iframe
-X_FRAME_OPTIONS = 'SAMEORIGIN'
+# Also add this to allow media filX_FRAME_OPTIONS = 'SAMEORIGIN'
 
 # Make sure media files are served in development
 if DEBUG:
@@ -257,3 +266,30 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'kwizeraangelus6@gmail.com'        # Your Gmail
 EMAIL_HOST_PASSWORD = 'aiaf dudx ykey qlwv'      # App Password (not regular password)
 DEFAULT_FROM_EMAIL = 'Rwanda Research Hub <kwizeraangelus@gmail.com>'
+
+
+
+
+
+# settings.py
+
+# Allow iframe embedding
+X_FRAME_OPTIONS = 'SAMEORIGIN'  # or 'ALLOWALL' for development
+
+# Or add this middleware to override X-Frame-Options
+
+
+# Custom middleware to remove X-Frame-Options for specific views
+class XFrameOptionsExemptMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        # Remove X-Frame-Options header
+        response.headers.pop('X-Frame-Options', None)
+        # Or set to allow from same origin
+        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+        return response
+
+# Add this after XFrameOptionsMiddleware

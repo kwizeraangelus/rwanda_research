@@ -225,3 +225,15 @@ class BookDetailSerializers(serializers.ModelSerializer):
             request = self.context.get('request')
             return request.build_absolute_uri(obj.file.url)
         return None
+
+
+
+
+
+
+
+
+
+
+
+

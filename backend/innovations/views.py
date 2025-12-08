@@ -7,12 +7,16 @@ from rest_framework.filters import SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
 from rest_framework.parsers import MultiPartParser, FormParser
-from .models import Upload
+from django.db.models import Avg
+from .models import Upload,Like
 from rest_framework import generics
 from .serializers import UploadSerializer
 from profiles.models import ResearcherProfile
 from rest_framework.decorators import api_view, permission_classes
-from .serializers import BookDetailSerializer,PublicUploadSerializer,UploadSerializers,BookDetailSerializers
+from .serializers import BookDetailSerializer,PublicUploadSerializer,UploadSerializers,BookDetailSerializers,BookSerializer
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
 
 class UploadCreateView(APIView):
     permission_classes = [IsAuthenticated]
@@ -194,8 +198,8 @@ class PublicationListAPIView(generics.ListAPIView):
 @permission_classes([AllowAny])
 def public_book_detail(request, pk):
     try:
-        book = upload.objects.get(pk=pk)
-    except Book.DoesNotExist:
+        book = Upload.objects.get(pk=pk)
+    except book.DoesNotExist:
         return Response(status=404)
     
     serializer = BookSerializer(book)
@@ -213,6 +217,67 @@ def public_innovation_detail(request, pk):
     # 🛑 CRITICAL FIX: Pass context={'request': request} 🛑
     serializer = PublicUploadSerializer(upload, context={'request': request}) 
     return Response(serializer.data)
+
+
+    # innovations/views.py - Add this endpoint
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework import status
+from .models import Upload, Rating
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def rate_document(request, pk):
+    """
+    Rate a document
+    """
+    try:
+        document = Upload.objects.get(id=pk)
+        
+        # Get user identifier (use session or IP for anonymous users)
+        user_identifier = request.session.session_key or request.META.get('REMOTE_ADDR')
+        
+        # Check if user already rated
+        existing_rating = Rating.objects.filter(
+            document=document,
+            user_identifier=user_identifier
+        ).first()
+        
+        if existing_rating:
+            # Update existing rating
+            existing_rating.rating = request.data.get('rating')
+            existing_rating.save()
+            message = 'Rating updated'
+        else:
+            # Create new rating
+            Rating.objects.create(
+                document=document,
+                user_identifier=user_identifier,
+                rating=request.data.get('rating')
+            )
+            message = 'Rating saved'
+        
+        # Calculate average rating
+        ratings = Rating.objects.filter(document=document)
+        average_rating = ratings.aggregate(Avg('rating'))['rating__avg']
+        
+        return Response({
+            'message': message,
+            'average_rating': average_rating,
+            'total_ratings': ratings.count()
+        })
+        
+    except Upload.DoesNotExist:
+        return Response(
+            {'error': 'Document not found'}, 
+            status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response(
+            {'error': str(e)}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 
@@ -252,3 +317,84 @@ class PublicInnovationDetailAPIView(generics.RetrieveAPIView):
     serializer_class = BookDetailSerializers   # ← has user_id
     permission_classes = [AllowAny]
     lookup_field = 'pk'
+
+
+
+
+
+
+
+
+
+
+
+@csrf_exempt
+@require_POST
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+@csrf_exempt
+@require_POST
+def like_upload(request, id):
+    try:
+        upload = Upload.objects.get(id=id)
+        ip_address = get_client_ip(request)
+        
+        # Check if this IP already liked this upload
+        existing_like = Like.objects.filter(
+            upload=upload,
+            ip_address=ip_address
+        ).first()
+        
+        if existing_like:
+            return JsonResponse({
+                'liked': True,
+                'likes_count': upload.likes_count,
+                'message': 'Already liked from this IP'
+            })
+        
+        # Create new like
+        Like.objects.create(
+            upload=upload,
+            ip_address=ip_address
+        )
+        
+        # Update likes count
+        upload.likes_count += 1
+        upload.save()
+        
+        return JsonResponse({
+            'liked': True,
+            'likes_count': upload.likes_count
+        })
+    except Upload.DoesNotExist:
+        return JsonResponse({'error': 'Upload not found'}, status=404)
+
+@csrf_exempt
+@require_POST
+def unlike_upload(request, id):
+    try:
+        upload = Upload.objects.get(id=id)
+        ip_address = get_client_ip(request)
+        
+        # Delete like for this IP
+        deleted_count = Like.objects.filter(
+            upload=upload,
+            ip_address=ip_address
+        ).delete()[0]
+        
+        if deleted_count > 0:
+            upload.likes_count = max(0, upload.likes_count - 1)
+            upload.save()
+        
+        return JsonResponse({
+            'liked': False,
+            'likes_count': upload.likes_count
+        })
+    except Upload.DoesNotExist:
+        return JsonResponse({'error': 'Upload not found'}, status=404)
