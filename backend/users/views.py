@@ -49,10 +49,7 @@ class LoginView(APIView):
         if not email or not password:
             return Response({'error': 'Email and password required'}, status=400)
 
-        try:
-            user = CustomUser.objects.get(email=email)
-        except CustomUser.DoesNotExist:
-            return Response({'error': 'Invalid credentials'}, status=401)
+        
 
         user = authenticate(username=email, password=password)
         if not user:
@@ -92,7 +89,70 @@ class LoginView(APIView):
         response.set_cookie('refresh_token', str(refresh), httponly=True, samesite='Lax', max_age=7*24*3600)
 
         return response
+class LoginView(APIView):
+    permission_classes = [AllowAny]
+    def post(self, request):
+        email = request.data.get('email')
+        password = request.data.get('password')
 
+        if not email or not password:
+            return Response({'error': 'Email and password required'}, status=400)
+
+        try:
+            user = CustomUser.objects.get(email=email)
+        except CustomUser.DoesNotExist:
+            return Response({'error': 'Invalid credentials'}, status=401)
+
+        user = authenticate(username=email, password=password)
+        if not user:
+            return Response({'error': 'Invalid credentials'}, status=401)
+
+        refresh = RefreshToken.for_user(user)
+
+        redirect_to = '/visitor'
+        if user.is_staff:
+            redirect_to = '/admin-dashboard'
+        elif user.user_category == 'researcher':
+            redirect_to = '/researcher'
+        elif user.user_category == 'university':
+            redirect_to = '/university'
+        elif user.user_category == 'conf_organizer':
+            redirect_to = '/organizer'
+        elif user.user_category == 'admin':
+            redirect_to = '/admin'
+        elif user.user_category == 'innovator':
+            redirect_to = '/innovator'
+
+        response = Response({
+            'message': 'Login successful',
+            'redirect': redirect_to,
+            'user': {
+                'id': str(user.id),
+                'username': user.username,
+                'email': user.email,
+                'category': user.user_category,
+                'is_admin': user.is_staff,
+            }
+        }, status=200)
+
+        response.set_cookie(
+            key='access_token',
+            value=str(refresh.access_token),
+            httponly=True,
+            secure=False,
+            samesite='Lax',
+            max_age=3600
+        )
+        response.set_cookie(
+            key='refresh_token',
+            value=str(refresh),
+            httponly=True,
+            secure=False,
+            samesite='Lax',
+            max_age=7*24*3600
+        )
+
+        return response
 
 
 

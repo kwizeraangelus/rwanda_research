@@ -123,6 +123,7 @@ export default function RegisterPage() {
               <option value="university">University</option>
               <option value="conference_organizer">Conference Organizer</option>
               <option value="public_visitor">Public Visitor</option>
+              <option value="innovator">innovator</option>
             </select>
           </div>
 

@@ -11,6 +11,7 @@ USER_CATEGORIES = (
     ('conf_organizer', _('Conference Organizer')),
     ('public_visitor', _('Public Visitor')),
     ('admin', _('admin')),
+    ('innovator', _('Innovator'))
 )
 
 

@@ -3,7 +3,7 @@ from .views import RegisterView,LoginView,signup_view,login_view,profile_view
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
-    path('login/', LoginView.as_view(), name='login'),
+    path('nova/login/', LoginView.as_view(), name='login'),
 
 
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -17,7 +17,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:8000/api/login/', {
+      const res = await fetch('http://localhost:8000/api/nova/login/', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -27,14 +27,8 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (res.ok) {
-        // CHECK WHERE THEY WANTED TO GO
-        const intendedPath = localStorage.getItem('intendedPath');
-        if (intendedPath) {
-          localStorage.removeItem('intendedPath');
-          window.location.assign(intendedPath);  // ← GO TO THE BOOK
-        } else {
-          window.location.assign('/visitor');
-        }
+        // REDIRECT BASED ON USER TYPE
+        router.push(data.redirect);
       } else {
         setError(data.error || 'Login failed');
       }
