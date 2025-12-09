@@ -22,5 +22,17 @@ urlpatterns = [
 
 
 
+
+
+   
+
+
+
+
+     path('admin/approved-books/', views.approved_books, name='approved_books'),
+    path('admin/books/<int:book_id>/delete/', views.delete_book, name='delete_book'),
+
+
+
       
 ]

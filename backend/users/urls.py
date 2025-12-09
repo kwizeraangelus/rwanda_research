@@ -1,15 +1,19 @@
 from django.urls import path
-from .views import RegisterView,LoginView,signup_view,login_view,profile_view
+from . import views
 
 urlpatterns = [
-    path('register/', RegisterView.as_view(), name='register'),
-    path('nova/login/', LoginView.as_view(), name='login'),
+    path('register/', views.RegisterView.as_view(), name='register'),
+    path('nova/login/', views.LoginView.as_view(), name='login'),
 
 
 
 
 
-    path('signup/', signup_view),
-    path('logins/', login_view),
-    path('profile/', profile_view),
+    path('signup/', views.signup_view),
+    path('logins/', views.login_view),
+    path('profile/', views.profile_view),
+
+    path('admin/users/<uuid:user_id>/update/', views.update_user, name='update_user'),
+    path('admin/users/<uuid:user_id>/delete/', views.delete_user, name='delete_user'),
+
 ]

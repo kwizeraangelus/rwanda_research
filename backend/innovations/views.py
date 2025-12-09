@@ -1,7 +1,7 @@
 # uploads/views.py
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
@@ -398,3 +398,78 @@ def unlike_upload(request, id):
         })
     except Upload.DoesNotExist:
         return JsonResponse({'error': 'Upload not found'}, status=404)
+
+
+
+
+
+
+
+# views.py - Add this to your admin views
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def approved_books(request):
+    """Get all approved books with filtering options"""
+    try:
+        # Get filter parameters
+        title = request.GET.get('title', '')
+        university = request.GET.get('university', '')
+        author = request.GET.get('author', '')
+        category = request.GET.get('category', '')
+        
+        # Start with all approved books
+        books = Upload.objects.filter(status='approved').order_by('-created_at')
+        
+        # Apply filters
+        if title:
+            books = books.filter(title__icontains=title)
+        if university:
+            books = books.filter(university__icontains=university)
+        if author:
+            books = books.filter(authors__icontains=author)
+        if category:
+            books = books.filter(submission_type__icontains=category)
+        
+        # Serialize data
+        data = []
+        for book in books:
+            # Calculate average rating
+            ratings = book.ratings.all()
+            avg_rating = ratings.aggregate(Avg('rating'))['rating__avg'] or 0
+            
+            data.append({
+                'id': book.id,
+                'title': book.title,
+                'supervisor': book.supervisor_name or 'Not specified',
+                'description': book.description,
+                'university': book.university or 'Not specified',
+                'author': book.authors,
+                'category': book.category_display,
+                'submission_type': book.submission_type,
+                'likes_count': book.likes_count,
+                'views_count': book.views_count,
+                'rating': round(avg_rating, 1),
+                'cover_image_url': book.cover_image.url if book.cover_image else None,
+                'file_url': book.file.url if book.file else None,
+                'year': book.year,
+                'uploaded_at': book.uploaded_at,
+                'status': book.status,
+            })
+        
+        return Response({'books': data}, status=200)
+        
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def delete_book(request, book_id):
+    """Delete an approved book"""
+    try:
+        book = Upload.objects.get(id=book_id, status='approved')
+        book.delete()
+        return Response({'message': 'Book deleted successfully'}, status=200)
+    except Upload.DoesNotExist:
+        return Response({'error': 'Book not found'}, status=404)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
