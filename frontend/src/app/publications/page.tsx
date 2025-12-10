@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 
 // ──────────────────────────────────────────────────────
-// Types
+// Types (unchanged)
 // ──────────────────────────────────────────────────────
 interface Publication {
   id: number;
@@ -34,7 +34,7 @@ interface Counts {
 }
 
 // ──────────────────────────────────────────────────────
-// FIXED FIELD NAMES — 100% CONSISTENT
+// FIXED FIELD NAMES (unchanged)
 // ──────────────────────────────────────────────────────
 const CORE_FIELDS = [
   'Engineering',
@@ -80,7 +80,7 @@ const formatFieldName = (submissionType?: string): string => {
 };
 
 // ──────────────────────────────────────────────────────
-// Publication Card
+// Publication Card (FIXED - with clickable university that doesn't nest <a> tags)
 // ──────────────────────────────────────────────────────
 const PublicationCard: React.FC<Publication> = ({
   id, title, authors, description, cover_image,
@@ -89,8 +89,23 @@ const PublicationCard: React.FC<Publication> = ({
   const imageSrc = cover_image?.trim() || 'https://placehold.co/600x400/E0E7FF/1E40AF?text=No+Cover';
   const fieldName = formatFieldName(submission_type);
 
+  const handleUniversityClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Use window.location to navigate without React Router
+    if (university) {
+      window.location.href = `/university/${encodeURIComponent(university)}`;
+    }
+  };
+
   return (
-    <Link href={`/books/${id}`} className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100">
+    <div 
+      onClick={() => {
+        // Use window.location to navigate without React Router
+        window.location.href = `/books/${id}`;
+      }}
+      className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 cursor-pointer"
+    >
       <div className="h-56 bg-gradient-to-br from-blue-50 to-indigo-50 relative overflow-hidden">
         <img
           src={imageSrc}
@@ -111,12 +126,12 @@ const PublicationCard: React.FC<Publication> = ({
         <h3 className="text-xl font-bold text-gray-900 mb-4 line-clamp-2 group-hover:text-blue-700 transition">{title}</h3>
         <div className="space-y-3 text-sm">
           {university && (
-            <p className="font-semibold text-green-700 flex items-center gap-2">
-              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h-4m-6 0H5" />
-              </svg>
+            <button
+              onClick={handleUniversityClick}
+              className="font-semibold text-green-700 hover:underline text-left p-0 bg-transparent border-none cursor-pointer"
+            >
               {university}
-            </p>
+            </button>
           )}
           <p className="text-gray-700"><span className="text-gray-500 font-medium">Author:</span> {authors}</p>
           {supervisor_name && <p className="text-gray-700"><span className="text-gray-500 font-medium">Supervisor:</span> {supervisor_name}</p>}
@@ -130,12 +145,12 @@ const PublicationCard: React.FC<Publication> = ({
           </svg>
         </div>
       </div>
-    </Link>
+    </div>
   );
 };
 
 // ──────────────────────────────────────────────────────
-// Main Page — 100% WORKING SEARCH + FILTERS
+// Main Page (UNCHANGED)
 // ──────────────────────────────────────────────────────
 export default function PublicationsPage() {
   const [publications, setPublications] = useState<Publication[]>([]);
@@ -162,9 +177,7 @@ export default function PublicationsPage() {
       params.append('submission_type__icontains', term);
     }
 
-    if (degreeFilter !== 'all') {
-      params.append('degree_type', degreeFilter);
-    }
+    if (degreeFilter !== 'all') params.append('degree_type', degreeFilter);
 
     if (selectedField && FIELD_KEYWORDS[selectedField]) {
       FIELD_KEYWORDS[selectedField].forEach(keyword => {
@@ -205,7 +218,6 @@ export default function PublicationsPage() {
     }
   }, [degreeFilter]);
 
-  // Re-fetch on any change
   useEffect(() => {
     fetchPublications();
   }, [searchTerm, degreeFilter, selectedField]);
@@ -216,26 +228,11 @@ export default function PublicationsPage() {
 
   return (
     <div className="min-h-screen bg-[#E0F2FE] text-gray-900">
-      {/* NAV */}
-      <nav className="fixed inset-x-0 top-0 z-50 flex justify-between items-center px-[50px] py-[25px] bg-[#050A14] text-white shadow-2xl">
-        <div className="text-[45px] font-bold uppercase italic tracking-[2px]">RIRI</div>
-        <ul className="flex gap-[40px]">
-          {['home', 'publications', 'innovation', 'about', 'events'].map((item) => (
-            <li key={item}>
-              <Link href={`/${item === 'home' ? '' : item.toLowerCase()}`}
-                className={`text-base font-medium capitalize transition hover:text-[#FFD700] ${item === 'publications' ? 'text-[#FFD700]' : ''}`}>
-                {item}
-              </Link>
-            </li>
-          ))}
-        </ul>
-        <div className="w-[45px] h-[45px] bg-[#D9D9D9] rounded-full" />
-      </nav>
+      {/* DARK NAVY TOP BAND — same height as old nav, no content */}
+      <div className="h-28 bg-[#050A14]" aria-hidden="true" />
 
-      <div className="h-28" />
-
-      {/* HERO */}
-      <section className="py-20 text-center">
+      {/* HERO — overlaps the dark band beautifully */}
+      <section className="relative -mt-28 pt-36 pb-20 text-center">
         <div className="max-w-4xl mx-auto px-6">
           <h1 className="text-5xl md:text-6xl font-bold text-[#050A14] mb-6">
             Browse Research <span className="text-[#FFD700]">Publications</span>
@@ -249,7 +246,6 @@ export default function PublicationsPage() {
       {/* MAIN CONTENT */}
       <section className="py-12 px-6">
         <div className="max-w-7xl mx-auto">
-
           {/* SEARCH BAR */}
           <div className="flex justify-center mb-12">
             <div className="relative w-full max-w-2xl">
@@ -275,12 +271,25 @@ export default function PublicationsPage() {
 
           {/* Thesis / Dissertation Buttons */}
           <div className="flex justify-center gap-12 mb-12">
-            <button onClick={() => setDegreeFilter(degreeFilter === 'thesis' ? 'all' : 'thesis')}
-              className={`px-16 py-6 rounded-full text-2xl font-bold transition-all shadow-2xl flex items-center gap-4 ${degreeFilter === 'thesis' ? 'bg-gradient-to-r from-blue-600 to-blue-800 text-white scale-105' : 'bg-white text-blue-700 border-4 border-blue-400 hover:border-blue-700'}`}>
+            <button
+              onClick={() => setDegreeFilter(degreeFilter === 'thesis' ? 'all' : 'thesis')}
+              className={`px-16 py-6 rounded-full text-2xl font-bold transition-all shadow-2xl flex items-center gap-4 ${
+                degreeFilter === 'thesis'
+                  ? 'bg-gradient-to-r from-blue-600 to-blue-800 text-white scale-105'
+                  : 'bg-white text-blue-700 border-4 border-blue-400 hover:border-blue-700'
+              }`}
+            >
               Theses <span className="text-lg font-normal opacity-90">({counts.thesis})</span>
             </button>
-            <button onClick={() => setDegreeFilter(degreeFilter === 'dissertation' ? 'all' : 'dissertation')}
-              className={`px-16 py-6 rounded-full text-2xl font-bold transition-all shadow-2xl flex items-center gap-4 ${degreeFilter === 'dissertation' ? 'bg-gradient-to-r from-purple-600 to-purple-800 text-white scale-105' : 'bg-white text-purple-700 border-4 border-purple-400 hover:border-purple-700'}`}>
+
+            <button
+              onClick={() => setDegreeFilter(degreeFilter === 'dissertation' ? 'all' : 'dissertation')}
+              className={`px-16 py-6 rounded-full text-2xl font-bold transition-all shadow-2xl flex items-center gap-4 ${
+                degreeFilter === 'dissertation'
+                  ? 'bg-gradient-to-r from-purple-600 to-purple-800 text-white scale-105'
+                  : 'bg-white text-purple-700 border-4 border-purple-400 hover:border-purple-700'
+              }`}
+            >
               Dissertations <span className="text-lg font-normal opacity-90">({counts.dissertation})</span>
             </button>
           </div>

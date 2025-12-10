@@ -12,4 +12,12 @@ path('admin/events/', views.manage_events),
 path('admin/events/<int:pk>/', views.event_detail),
 path('admin/events/create/', views.create_event),
 path('admin/users/create/', views.create_user_admin),
+
+
+
+
+
+
+path('admin/users/<uuid:user_id>/update/', views.update_user, name='update_user'),
+path('admin/users/<uuid:user_id>/delete/', views.delete_user, name='delete_user'),
 ]
