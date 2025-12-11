@@ -17,6 +17,9 @@ interface UserData {
   username: string;
   email: string;
   user_category: string;
+  first_name: string;
+  last_name: string;
+
 }
 
 interface AuthResponse {
@@ -101,7 +104,7 @@ export default function HomePage() {
         }}
       >
         <div className="px-8 max-w-6xl mx-auto">
-          <h1 className="text-[45px] lg:text-[70px] leading-tight mb-10 font-bold">
+          <h1 className="text-[45px] lg:text-[70px] leading-tight mb-10 font-bold text-white">
             Discover a New Era of Books,<br />
             <span className="text-[#FFD700]">Creativity, and Innovation</span>
           </h1>

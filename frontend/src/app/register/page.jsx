@@ -121,7 +121,7 @@ export default function RegisterPage() {
               <option value="" disabled>Select your category</option>
               <option value="researcher">Researcher</option>
               <option value="university">University</option>
-              <option value="conference_organizer">Conference Organizer</option>
+              <option value="conf_organizer">Conference Organizer</option>
               <option value="public_visitor">Public Visitor</option>
               <option value="innovator">innovator</option>
             </select>

@@ -1495,15 +1495,24 @@ export default function AdminDashboard() {
         {/* ADMIN SIDEBAR MENU */}
         <div className="bg-[#f7f7e8] p-4 md:p-6 rounded-lg shadow space-y-3">
           <h3 className="text-xl font-bold text-[#4a772e] mb-4">Admin Tools</h3>
-          <button 
-            onClick={() => setActiveTab('pending')} 
-            className={`w-full py-3 px-4 text-left font-bold border rounded-lg transition flex items-center gap-3 ${activeTab === 'pending' ? 'bg-[#8c9c6f] text-white' : 'bg-[#d8e5c7] text-[#4a772e] border-[#8c9c6f] hover:bg-[#c4d5b0]'}`}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Pending Books
-          </button>
+  <button 
+    onClick={() => setActiveTab('pending')} 
+    className={`w-full py-3 px-4 text-left font-bold border rounded-lg transition flex items-center gap-3 ${activeTab === 'pending' ? 'bg-[#8c9c6f] text-white' : 'bg-[#d8e5c7] text-[#4a772e] border-[#8c9c6f] hover:bg-[#c4d5b0]'}`}
+  >
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    Pending Books
+  </button>
+  <button 
+  onClick={() => window.location.href = '/admin-dashboard/pending-events'}
+  className="w-full py-3 px-4 text-left font-bold border rounded-lg transition flex items-center gap-3 bg-[#d8e5c7] text-[#4a772e] border-[#8c9c6f] hover:bg-[#c4d5b0]"
+>
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+  Pending Events
+  </button>
           <button 
             onClick={() => setActiveTab('approved')} 
             className={`w-full py-3 px-4 text-left font-bold border rounded-lg transition flex items-center gap-3 ${activeTab === 'approved' ? 'bg-[#8c9c6f] text-white' : 'bg-[#d8e5c7] text-[#4a772e] border-[#8c9c6f] hover:bg-[#c4d5b0]'}`}

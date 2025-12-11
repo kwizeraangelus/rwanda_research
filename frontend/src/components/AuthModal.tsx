@@ -29,10 +29,13 @@ interface AuthModalProps {
 
 export default function AuthModal({ type, onClose, onAuthSuccess }: AuthModalProps) {
   const [formData, setFormData] = useState({
+    lastName:'',
+    firstName:'',
     username: '',
     email: '',
     password: '',
     confirmPassword: '',
+    userCategory:'',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,7 +55,15 @@ export default function AuthModal({ type, onClose, onAuthSuccess }: AuthModalPro
     return res.json();
   };
 
-  const signupUser = async (data: { username: string; email: string; password: string }) => {
+  const signupUser = async (data: { 
+  username: string;
+  email: string;
+  password: string;
+  first_name: string;
+  last_name: string;
+  user_category: string;
+}) => {
+
     const res = await fetch(`${API_BASE_URL}/signup/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -92,6 +103,9 @@ export default function AuthModal({ type, onClose, onAuthSuccess }: AuthModalPro
             username: formData.username,
             email: formData.email,
             password: formData.password,
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            user_category: formData.userCategory,
           });
 
       localStorage.setItem('access_token', response.access);
@@ -147,7 +161,21 @@ export default function AuthModal({ type, onClose, onAuthSuccess }: AuthModalPro
           )}
 
           {!isLogin && (
-            <>
+            <><input
+  type="text"
+  placeholder="First Name"
+  value={formData.firstName}
+  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+  className="input"
+/>
+
+<input
+  type="text"
+  placeholder="Last Name"
+  value={formData.lastName}
+  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+  className="input"
+/>
               <input
                 type="text"
                 name="username"
@@ -168,8 +196,21 @@ export default function AuthModal({ type, onClose, onAuthSuccess }: AuthModalPro
                 className="w-full px-5 py-4 border rounded-xl focus:ring-4 focus:ring-green-500"
                 disabled={loading}
               />
+              <select
+  value={formData.userCategory}
+  onChange={(e) => setFormData({ ...formData, userCategory: e.target.value })}
+  className="w-full p-3 rounded bg-white text-black"
+>
+  <option value="">Select Category</option>
+  <option value="conf_organizer">Conference Organizer</option>
+  <option value="university">University</option>
+  <option value="innovator">Innovator</option>
+  <option value="public_visitor">Public Visitor</option>
+</select>
             </>
+            
           )}
+          
 
           {isLogin && (
             <input

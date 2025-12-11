@@ -24,6 +24,8 @@ interface UserData {
   username: string;
   email: string;
   user_category: string;
+  first_name: string;
+  last_name: string;
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -121,9 +123,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="en">
-      <body className={`${poppins.variable} font-sans bg-[#050A14] text-white min-h-screen overflow-x-hidden`}>
+      <body className={`${poppins.variable} font-sans bg-[#050A14] min-h-screen overflow-x-hidden`}>
         {/* NAVBAR - Shared everywhere */}
-        <nav className={`fixed inset-x-0 top-0 z-50 flex justify-between items-center px-8 lg:px-[50px] py-6 lg:py-[25px] transition-all ${scrolled ? 'bg-[#0c1e30ee] backdrop-blur-xl shadow-2xl py-4' : 'bg-transparent'}`}>
+        <nav className={`fixed inset-x-0 top-0 z-50 flex justify-between items-center px-8 lg:px-[50px] py-6 lg:py-[25px] text-white transition-all ${scrolled ? 'bg-[#0c1e30ee] backdrop-blur-xl shadow-2xl py-4' : 'bg-transparent'}`}>
           <Link href="/" className="text-[40px] lg:text-[45px] font-bold uppercase italic tracking-[3px] hover:text-[#FFD700] transition">
             RIRI
           </Link>

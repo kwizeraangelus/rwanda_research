@@ -41,56 +41,6 @@ from django.contrib.auth import authenticate
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
-
-    def post(self, request):
-        email = request.data.get('email')
-        password = request.data.get('password')
-
-        if not email or not password:
-            return Response({'error': 'Email and password required'}, status=400)
-
-        
-
-        user = authenticate(username=email, password=password)
-        if not user:
-            return Response({'error': 'Invalid credentials'}, status=401)
-
-        refresh = RefreshToken.for_user(user)
-
-        # GET WHERE THEY WANTED TO GO (from frontend)
-        redirect_to = request.data.get('next', '/visitor')  # ← THIS IS THE KEY
-
-        # Only override for non-public users
-        if user.user_category != 'public_visitor':
-            if user.is_staff:
-                redirect_to = '/admin-dashboard'
-            elif user.user_category == 'researcher':
-                redirect_to = '/researcher'
-            elif user.user_category == 'university':
-                redirect_to = '/university'
-            elif user.user_category == 'conf_organizer':
-                redirect_to = '/organizer'
-            elif user.user_category == 'admin':
-                redirect_to = '/admin'
-
-        response = Response({
-            'message': 'Login successful',
-            'redirect': redirect_to,
-            'user': {
-                'id': str(user.id),
-                'username': user.username,
-                'email': user.email,
-                'category': user.user_category,
-                'is_admin': user.is_staff,
-            }
-        }, status=200)
-
-        response.set_cookie('access_token', str(refresh.access_token), httponly=True, samesite='Lax', max_age=3600)
-        response.set_cookie('refresh_token', str(refresh), httponly=True, samesite='Lax', max_age=7*24*3600)
-
-        return response
-class LoginView(APIView):
-    permission_classes = [AllowAny]
     def post(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
@@ -109,7 +59,7 @@ class LoginView(APIView):
 
         refresh = RefreshToken.for_user(user)
 
-        redirect_to = '/visitor'
+        redirect_to = '/'
         if user.is_staff:
             redirect_to = '/admin-dashboard'
         elif user.user_category == 'researcher':
@@ -170,17 +120,33 @@ class LoginView(APIView):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
-def signup_view(request):
-    serializer = SignupSerializer(data=request.data)
-    if serializer.is_valid():
-        user = serializer.save()
-        refresh = RefreshToken.for_user(user)
-        return Response({
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-            'user': UserProfileSerializer(user).data
-        }, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+def register_user(request):
+    data = request.data
+
+    user = CustomUser.objects.create_user(
+        username=data['username'],
+        email=data['email'],
+        password=data['password'],
+        first_name=data.get('first_name', ''),
+        last_name=data.get('last_name', ''),
+    )
+
+    # Custom field if your User model has it
+    user.user_category = data.get('user_category', '')
+    user.save()
+
+    return Response({
+        "message": "User created",
+        "user": {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "user_category": user.user_category,
+        }
+    })
+
 
 @api_view(['POST'])
 @permission_classes([AllowAny])

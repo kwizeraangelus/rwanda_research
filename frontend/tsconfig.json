@@ -36,7 +36,7 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     ".next/dev/types/**/*.ts"
-  ],
+, "src/app/organizer/page.jsx"  ],
   "exclude": [
     "node_modules"
   ]
