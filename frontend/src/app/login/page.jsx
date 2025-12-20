@@ -11,6 +11,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // The handleSubmit logic remains the same
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -39,47 +40,66 @@ export default function LoginPage() {
     }
   };
 
+  // --- Styling Constants (for register link and input focus) ---
+  const SOFT_SKY_BLUE = '#e0f7fa'; 
+  const STRONG_YELLOW = '#FFD700'; 
+  // STRONG_YELLOW_HOVER = '#FBC02D'; 
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#d8e5c7] p-4">
-      <div className="bg-[#f7f7e8] p-8 rounded-xl shadow-lg w-full max-w-md">
-        <h2 className="text-2xl font-bold text-center text-[#4a772e] mb-6">Log In</h2>
+    // Background color: soft sky blue
+    <div className={`min-h-screen flex items-center justify-center bg-[${SOFT_SKY_BLUE}] p-4`}>
+      {/* Card background: white */}
+      <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+        {/* Heading color: black */}
+        <h2 className="text-2xl font-bold text-center text-black mb-6">Log In</h2>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1">Email</label>
+            {/* Label is bolded */}
+            <label className="block text-sm font-bold text-black-700 mb-1">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#8c9c6f]"
+              // Input text is bold
+              className={`w-full px-3 py-2 border rounded-md font-bold focus:ring-2 focus:ring-[${STRONG_YELLOW}]`}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1">Password</label>
+            {/* Label is bolded */}
+            <label className="block text-sm font-bold text-black-700 mb-1">Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#8c9c6f]"
+              // Input text is bold
+              className={`w-full px-3 py-2 border rounded-md font-bold focus:ring-2 focus:ring-[${STRONG_YELLOW}]`}
             />
           </div>
 
           {error && <p className="text-red-600 text-sm">{error}</p>}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 bg-[#8c9c6f] text-white font-bold rounded-md hover:bg-[#7a885d] disabled:opacity-50"
-          >
-            {loading ? 'Logging in...' : 'Log In'}
-          </button>
+         <button
+  type="submit"
+  disabled={loading}
+  className={`w-24 h-16 mx-auto block bg-[#FFD700] text-black text-lg font-bold rounded-md hover:bg-[#FBC02D] disabled:opacity-50 transition-colors duration-150 flex items-center justify-center`}
+>
+  {loading ? '...' : 'Log In'}
+</button>
+
         </form>
 
         <p className="text-center text-sm text-gray-600 mt-6">
-          No account? <Link href="/register" className="text-[#4a772e] font-bold hover:underline">Register</Link>
+          No account? <Link 
+          href="/register"
+          // Register link color: strong yellow and bold
+          className={`text-[${STRONG_YELLOW}] font-bold hover:underline`}
+          >
+          Register
+          </Link>
         </p>
       </div>
     </div>

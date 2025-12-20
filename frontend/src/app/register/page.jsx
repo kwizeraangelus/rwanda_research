@@ -1,22 +1,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-// import { useRouter } from 'next/navigation'; // <-- REMOVED: Caused resolution error
 
 export default function RegisterPage() {
-  // const router = useRouter(); // <-- REMOVED
-
   const [user_category, setCategory] = useState('');
   const [showUniversity, setShowUniversity] = useState(false);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState(false);
+
   const [formData, setFormData] = useState({
     username: '',
     email: '',
     phone_number: '',
     university_name: '',
   });
+
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -44,13 +43,13 @@ export default function RegisterPage() {
       return;
     }
 
-    // FIX: Include password and confirmPassword in the data payload
     const submitData = {
       ...formData,
       user_category,
       password,
       confirm_password: confirmPassword,
-      university_name: user_category === 'university' ? formData.university_name : '',
+      university_name:
+        user_category === 'university' ? formData.university_name : '',
     };
 
     setLoading(true);
@@ -65,17 +64,19 @@ export default function RegisterPage() {
 
       if (response.ok) {
         setSuccess(true);
-        // FIX: Use window.location.href for redirection
         setTimeout(() => {
-          window.location.href = '/login'; 
+          window.location.href = '/login';
         }, 1500);
       } else {
-        // Log the full error to the console for easier debugging
-        console.error("API Error Response:", data);
-        setApiError(data.password?.[0] || data.confirm_password?.[0] || data.user_category?.[0] || data.errors?.non_field_errors?.[0] || data.message || 'Registration failed.');
+        setApiError(
+          data.password?.[0] ||
+            data.confirm_password?.[0] ||
+            data.user_category?.[0] ||
+            data.message ||
+            'Registration failed.'
+        );
       }
     } catch (error) {
-      console.error("Network or JSON Error:", error);
       setApiError('Network error. Please try again.');
     } finally {
       setLoading(false);
@@ -85,86 +86,156 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#d8e5c7] p-4">
       <div className="bg-[#f7f7e8] p-8 rounded-xl shadow-lg w-full max-w-md relative">
-        <h2 className="text-2xl font-bold text-center text-[#4a772e] mb-6">Register Account</h2>
+
+        {/* Title */}
+        <h2 className="text-2xl font-bold text-center text-[#FFD700] mb-6">
+          Register Account
+        </h2>
 
         {/* Success Toast */}
         {success && (
-          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg animate-in fade-in slide-in-from-top duration-300 z-10">
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg">
             Registration successful! Redirecting to login...
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* === Form fields === */}
+
+          {/* Username */}
           <div>
-            <label htmlFor="username" className="block text-sm font-bold text-gray-700 mb-1">Username</label>
-            <input type="text" id="username" name="username" required value={formData.username} onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8c9c6f]" />
+            <label className="block text-sm font-bold text-gray-700 mb-1">
+              Username
+            </label>
+            <input
+              type="text"
+              name="username"
+              required
+              value={formData.username}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:border-[#FFD700]"
+            />
           </div>
 
+          {/* Email */}
           <div>
-            <label htmlFor="email" className="block text-sm font-bold text-gray-700 mb-1">Email</label>
-            <input type="email" id="email" name="email" required value={formData.email} onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8c9c6f]" />
+            <label className="block text-sm font-bold text-gray-700 mb-1">
+              Email
+            </label>
+            <input
+              type="email"
+              name="email"
+              required
+              value={formData.email}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:border-[#FFD700]"
+            />
           </div>
 
+          {/* Phone */}
           <div>
-            <label htmlFor="phone_number" className="block text-sm font-bold text-gray-700 mb-1">Phone Number</label>
-            <input type="tel" id="phone_number" name="phone_number" placeholder="e.g., +250788123456" required value={formData.phone_number} onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8c9c6f]" />
+            <label className="block text-sm font-bold text-gray-700 mb-1">
+              Phone Number
+            </label>
+            <input
+              type="tel"
+              name="phone_number"
+              required
+              value={formData.phone_number}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:border-[#FFD700]"
+            />
           </div>
 
+          {/* Category */}
           <div>
-            <label htmlFor="user_category" className="block text-sm font-bold text-gray-700 mb-1">User Category</label>
-            <select id="user_category" name="user_category" required value={user_category} onChange={(e) => setCategory(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8c9c6f]">
+            <label className="block text-sm font-bold text-gray-700 mb-1">
+              User Category
+            </label>
+            <select
+              required
+              value={user_category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:border-[#FFD700]"
+            >
               <option value="" disabled>Select your category</option>
               <option value="researcher">Researcher</option>
               <option value="university">University</option>
               <option value="conf_organizer">Conference Organizer</option>
               <option value="public_visitor">Public Visitor</option>
-              <option value="innovator">innovator</option>
+              <option value="innovator">Innovator</option>
             </select>
           </div>
 
+          {/* University */}
           {showUniversity && (
-            <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-              <label htmlFor="university-name" className="block text-sm font-bold text-gray-700 mb-1">University Name</label>
-              <input type="text" id="university-name" name="university_name" required value={formData.university_name} onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8c9c6f]" />
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-1">
+                University Name
+              </label>
+              <input
+                type="text"
+                name="university_name"
+                required
+                value={formData.university_name}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:border-[#FFD700]"
+              />
             </div>
           )}
 
+          {/* Password */}
           <div>
-            <label htmlFor="password" className="block text-sm font-bold text-gray-700 mb-1">Password</label>
-            <input type="password" id="password" required value={password} onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8c9c6f]" />
+            <label className="block text-sm font-bold text-gray-700 mb-1">
+              Password
+            </label>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:border-[#FFD700]"
+            />
           </div>
 
+          {/* Confirm Password */}
           <div>
-            <label htmlFor="confirm-password" className="block text-sm font-bold text-gray-700 mb-1">Confirm Password</label>
-            <input type="password" id="confirm-password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8c9c6f]" />
-            {passwordError && <p className="text-red-600 text-sm mt-1">Passwords do not match.</p>}
+            <label className="block text-sm font-bold text-gray-700 mb-1">
+              Confirm Password
+            </label>
+            <input
+              type="password"
+              required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:border-[#FFD700]"
+            />
+            {passwordError && (
+              <p className="text-red-600 text-sm mt-1">
+                Passwords do not match.
+              </p>
+            )}
           </div>
 
           {apiError && (
-            <p className="text-red-600 text-sm bg-red-50 p-2 rounded border border-red-200">{apiError}</p>
+            <p className="text-red-600 text-sm bg-red-50 p-2 rounded">
+              {apiError}
+            </p>
           )}
 
+          {/* Button */}
           <button
             type="submit"
             disabled={loading || success}
-            className="w-full py-3 mt-5 bg-[#8c9c6f] text-white font-bold rounded-md hover:bg-[#7a885d] transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-24 h-16 mx-auto block mt-5 bg-[#FFD700] text-black text-lg font-bold rounded-md hover:bg-[#FBC02D] transition duration-300 disabled:opacity-50 flex items-center justify-center"
           >
-            {loading ? 'Registering...' : success ? 'Redirecting...' : 'Register'}
+            {loading || success ? '...' : 'Register'}
           </button>
         </form>
 
-        {/* Optional: Link to login */}
+        {/* Login link */}
         <p className="text-center text-sm text-gray-600 mt-6">
           Already have an account?{' '}
-          <a href="/login" className="text-[#4a772e] font-semibold hover:underline">
+          <a href="/login" className="text-[#FFD700] font-semibold hover:underline">
             Login here
           </a>
         </p>
