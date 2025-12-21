@@ -16,7 +16,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = ResearcherProfile
         fields = [
-            'id', 'user','sdetails',  'age', 'phone', 
+            'id', 'user','details',  'age', 'phone', 
             'location', 'university', 'profile_image', 
             'profile_complete'
         ]
