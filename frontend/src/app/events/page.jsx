@@ -80,9 +80,9 @@ export default function EventsPage() {
                 >
                   {/* EVENT IMAGE */}
                   <div className="relative h-64 overflow-hidden bg-gray-100">
-                    {event.image ? (
+                    {event.photo_url ? (
                       <img
-                        src={event.image}
+                        src={event.photo_url}
                         alt={event.title}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                         onError={(e) => {

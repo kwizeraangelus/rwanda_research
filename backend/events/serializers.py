@@ -9,9 +9,14 @@ class EventSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'description', 'date', 'location', 'photo', 'photo_url', 'icon', 'link', 'created_at']
     
     def get_photo_url(self, obj):
-        if obj.photo:
+     if obj.photo:
+        request = self.context.get('request')
+        if request:
+            return request.build_absolute_uri(obj.photo.url)
+        else:
+            # Fallback if no request (rare)
             return obj.photo.url
-        return None
+     return None
     
 
 

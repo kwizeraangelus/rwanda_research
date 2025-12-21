@@ -171,7 +171,7 @@ export default function BookDetailPage() {
   };
 
   if (loading) return (
-    <div className="min-h-screen bg-[#d8e5c7] flex items-center justify-center">
+    <div className="min-h-screen bg-[#E0F2FE] flex items-center justify-center">
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
         <p className="text-gray-700">Loading research details…</p>
@@ -180,7 +180,7 @@ export default function BookDetailPage() {
   );
   
   if (error) return (
-    <div className="min-h-screen bg-[#d8e5c7] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#E0F2FE] flex items-center justify-center p-4">
       <div className="text-center">
         <p className="text-red-600 text-xl mb-4">{error}</p>
         <button 
@@ -195,13 +195,13 @@ export default function BookDetailPage() {
   );
   
   if (!book) return (
-    <div className="min-h-screen bg-[#d8e5c7] flex items-center justify-center">
+    <div className="min-h-screen bg-[#E0F2FE] flex items-center justify-center">
       <p className="text-gray-600">No research data available.</p>
     </div>
   );
 
   return (
-    <article className="min-h-screen bg-[#d8e5c7] py-8 px-4">
+    <article className="min-h-screen bg-[#E0F2FE] py-8 px-4">
       <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-xl overflow-hidden">
         {/* Header with Back Button */}
         <header className="p-8 bg-gradient-to-b from-gray-50 to-white text-center border-b-4 border-double border-gray-400 relative">
@@ -314,7 +314,7 @@ export default function BookDetailPage() {
                 className="inline-flex items-center px-8 py-4 bg-green-700 text-white font-bold text-lg rounded-lg shadow-lg hover:bg-green-800 transition transform hover:scale-105"
               >
                 <Download className="w-6 h-6 mr-3" />
-                Download / Open PDF
+                 Open PDF
               </a>
             )}
             {book?.external_link && (

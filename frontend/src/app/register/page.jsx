@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 export default function RegisterPage() {
   const [user_category, setCategory] = useState('');
@@ -12,7 +13,7 @@ export default function RegisterPage() {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
-    first_name: '',    // ← Add
+    first_name: '',
     last_name: '',
     phone_number: '',
     university_name: '',
@@ -22,15 +23,19 @@ export default function RegisterPage() {
   const [apiError, setApiError] = useState('');
   const [success, setSuccess] = useState(false);
 
+  // Colors (same as Login)
+  const SOFT_SKY_BLUE = '#e0f7fa';
+  const STRONG_YELLOW = '#FFD700';
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   useEffect(() => {
     setShowUniversity(user_category === 'university');
     if (user_category !== 'university') {
-      setFormData(prev => ({ ...prev, university_name: '' }));
+      setFormData((prev) => ({ ...prev, university_name: '' }));
     }
   }, [user_category]);
 
@@ -38,7 +43,6 @@ export default function RegisterPage() {
     e.preventDefault();
     setApiError('');
     setPasswordError(false);
-    setSuccess(false);
 
     if (password !== confirmPassword) {
       setPasswordError(true);
@@ -50,8 +54,6 @@ export default function RegisterPage() {
       user_category,
       password,
       confirm_password: confirmPassword,
-      university_name:
-        user_category === 'university' ? formData.university_name : '',
     };
 
     setLoading(true);
@@ -71,121 +73,112 @@ export default function RegisterPage() {
         }, 1500);
       } else {
         setApiError(
-          data.password?.[0] ||
+          data.message ||
+            data.password?.[0] ||
             data.confirm_password?.[0] ||
-            data.user_category?.[0] ||
-            data.message ||
-            'Registration failed.'
+            'Registration failed'
         );
       }
-    } catch (error) {
-      setApiError('Network error. Please try again.');
+    } catch {
+      setApiError('Network error');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#d8e5c7] p-4">
-      <div className="bg-[#f7f7e8] p-8 rounded-xl shadow-lg w-full max-w-md relative">
-
-        {/* Title */}
-        <h2 className="text-2xl font-bold text-center text-[#FFD700] mb-6">
-          Register Account
+    <div
+      className={`min-h-screen flex items-center justify-center bg-[${SOFT_SKY_BLUE}] p-4`}
+    >
+      <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+        <h2 className="text-2xl font-bold text-center text-black mb-6">
+          Register
         </h2>
 
-        {/* Success Toast */}
         {success && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg">
-            Registration successful! Redirecting to login...
-          </div>
+          <p className="text-green-600 text-center font-bold mb-4">
+            Registration successful! Redirecting…
+          </p>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* === Form fields === */}
-
-
+          {/* First Name */}
           <div>
-  <label htmlFor="first_name" className="block text-sm font-bold text-gray-700 mb-1">First Name</label>
-  <input
-    type="text"
-    id="first_name"
-    name="first_name"
-    required
-    value={formData.first_name || ''}
-    onChange={handleInputChange}
-    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8c9c6f]"
-  />
-</div>
+            <label className="block text-sm font-bold mb-1">First Name</label>
+            <input
+              type="text"
+              name="first_name"
+              required
+              value={formData.first_name}
+              onChange={handleInputChange}
+              className={`w-full px-3 py-2 border rounded-md font-bold focus:ring-2 focus:ring-[${STRONG_YELLOW}]`}
+            />
+          </div>
 
-<div>
-  <label htmlFor="last_name" className="block text-sm font-bold text-gray-700 mb-1">Last Name</label>
-  <input
-    type="text"
-    id="last_name"
-    name="last_name"
-    required
-    value={formData.last_name || ''}
-    onChange={handleInputChange}
-    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8c9c6f]"
-  />
-</div>
+          {/* Last Name */}
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1">
-              Username
-            </label>
+            <label className="block text-sm font-bold mb-1">Last Name</label>
+            <input
+              type="text"
+              name="last_name"
+              required
+              value={formData.last_name}
+              onChange={handleInputChange}
+              className={`w-full px-3 py-2 border rounded-md font-bold focus:ring-2 focus:ring-[${STRONG_YELLOW}]`}
+            />
+          </div>
+
+          {/* Username */}
+          <div>
+            <label className="block text-sm font-bold mb-1">Username</label>
             <input
               type="text"
               name="username"
               required
               value={formData.username}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:border-[#FFD700]"
+              className={`w-full px-3 py-2 border rounded-md font-bold focus:ring-2 focus:ring-[${STRONG_YELLOW}]`}
             />
           </div>
-          
 
+          {/* Email */}
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1">
-              Email
-            </label>
+            <label className="block text-sm font-bold mb-1">Email</label>
             <input
               type="email"
               name="email"
               required
               value={formData.email}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:border-[#FFD700]"
+              className={`w-full px-3 py-2 border rounded-md font-bold focus:ring-2 focus:ring-[${STRONG_YELLOW}]`}
             />
           </div>
 
           {/* Phone */}
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1">
-              Phone Number
-            </label>
+            <label className="block text-sm font-bold mb-1">Phone</label>
             <input
               type="tel"
               name="phone_number"
               required
               value={formData.phone_number}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:border-[#FFD700]"
+              className={`w-full px-3 py-2 border rounded-md font-bold focus:ring-2 focus:ring-[${STRONG_YELLOW}]`}
             />
           </div>
 
           {/* Category */}
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1">
+            <label className="block text-sm font-bold mb-1">
               User Category
             </label>
             <select
               required
               value={user_category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:border-[#FFD700]"
+              className={`w-full px-3 py-2 border rounded-md font-bold focus:ring-2 focus:ring-[${STRONG_YELLOW}]`}
             >
-              <option value="" disabled>Select your category</option>
+              <option value="">Select category</option>
               <option value="researcher">Researcher</option>
               <option value="university">University</option>
               <option value="conf_organizer">Conference Organizer</option>
@@ -194,10 +187,9 @@ export default function RegisterPage() {
             </select>
           </div>
 
-          {/* University */}
           {showUniversity && (
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">
+              <label className="block text-sm font-bold mb-1">
                 University Name
               </label>
               <input
@@ -206,28 +198,26 @@ export default function RegisterPage() {
                 required
                 value={formData.university_name}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:border-[#FFD700]"
+                className={`w-full px-3 py-2 border rounded-md font-bold focus:ring-2 focus:ring-[${STRONG_YELLOW}]`}
               />
             </div>
           )}
 
           {/* Password */}
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1">
-              Password
-            </label>
+            <label className="block text-sm font-bold mb-1">Password</label>
             <input
               type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:border-[#FFD700]"
+              className={`w-full px-3 py-2 border rounded-md font-bold focus:ring-2 focus:ring-[${STRONG_YELLOW}]`}
             />
           </div>
 
           {/* Confirm Password */}
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1">
+            <label className="block text-sm font-bold mb-1">
               Confirm Password
             </label>
             <input
@@ -235,37 +225,37 @@ export default function RegisterPage() {
               required
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:border-[#FFD700]"
+              className={`w-full px-3 py-2 border rounded-md font-bold focus:ring-2 focus:ring-[${STRONG_YELLOW}]`}
             />
             {passwordError && (
-              <p className="text-red-600 text-sm mt-1">
-                Passwords do not match.
+              <p className="text-red-600 text-sm">
+                Passwords do not match
               </p>
             )}
           </div>
 
           {apiError && (
-            <p className="text-red-600 text-sm bg-red-50 p-2 rounded">
-              {apiError}
-            </p>
+            <p className="text-red-600 text-sm">{apiError}</p>
           )}
 
           {/* Button */}
           <button
             type="submit"
-            disabled={loading || success}
-            className="w-24 h-16 mx-auto block mt-5 bg-[#FFD700] text-black text-lg font-bold rounded-md hover:bg-[#FBC02D] transition duration-300 disabled:opacity-50 flex items-center justify-center"
+            disabled={loading}
+            className="w-24 h-16 mx-auto block bg-[#FFD700] text-black text-lg font-bold rounded-md hover:bg-[#FBC02D] transition flex items-center justify-center"
           >
-            {loading || success ? '...' : 'Register'}
+            {loading ? '...' : 'Register'}
           </button>
         </form>
 
-        {/* Login link */}
         <p className="text-center text-sm text-gray-600 mt-6">
           Already have an account?{' '}
-          <a href="/login" className="text-[#FFD700] font-semibold hover:underline">
-            Login here
-          </a>
+          <Link
+            href="/login"
+            className={`text-[${STRONG_YELLOW}] font-bold hover:underline`}
+          >
+            Login
+          </Link>
         </p>
       </div>
     </div>

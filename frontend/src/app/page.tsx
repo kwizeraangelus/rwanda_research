@@ -7,6 +7,7 @@ import { Loader2 } from 'lucide-react';
 
 // Import the AuthModal from a separate component
 import AuthModal from '@/components/AuthModal';
+import Link from 'next/link';
 
 // --- Constants & Types ---
 interface UserData {
@@ -241,9 +242,12 @@ export default function HomePage() {
                 <h3 className={`text-2xl font-bold mb-3 ${SOFT_ACCENT_COLOR_TEXT}`}>{event.title}</h3>
                 <p className="mb-2 text-gray-700"><strong>Date:</strong> {event.date}</p>
                 <p className="text-gray-700"><strong>Venue:</strong> {event.location}</p>
-                <button className="mt-6 px-6 py-3 bg-[#FFD700] text-black font-bold rounded-full hover:bg-yellow-400 transition shadow-md">
+                <Link href="/events">
+                <button  className="mt-6 px-6 py-3 bg-[#FFD700] text-black font-bold rounded-full hover:bg-yellow-400 transition shadow-md ">
+                 
                   Register Now
                 </button>
+                </Link>
               </div>
             ))}
           </div>

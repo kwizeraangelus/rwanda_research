@@ -7,7 +7,7 @@ class InnovationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Innovation
-        fields = ['id', 'name', 'description', 'photo', 'photo_url', 'status', 'sponsorship_needed', 'created_at']
+        fields = ['id', 'name', 'description', 'photo', 'photo_url', 'status', 'sponsorship_needed','feedback', 'created_at']
         read_only_fields = ['status', 'created_at']
 
     def get_photo_url(self, obj):

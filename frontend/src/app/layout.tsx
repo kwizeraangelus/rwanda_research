@@ -13,10 +13,11 @@ const poppins = Poppins({ subsets: ['latin'], weight: ['300', '400', '600', '700
 
 const navLinks = [
   { name: 'home', href: '/' },
-  { name: 'publications', href: '/publications' },
+  { name: 'research', href: '/publications' },
   { name: 'innovation', href: '/innovation' },
   { name: 'about', href: '/about' },
   { name: 'events', href: '/events' },
+   { name: 'contanct', href: '/contact' },
 ] as const;
 
 interface UserData {

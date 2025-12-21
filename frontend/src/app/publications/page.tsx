@@ -95,52 +95,81 @@ const PublicationCard: React.FC<Publication> = ({
   };
 
   return (
-    <div
-    
-      className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 cursor-pointer"
-    >
-      <div className="h-10 bg-gradient-to-br from-blue-50 to-indigo-50 relative overflow-hidden">
-        {degree_type && (
-          <div className="absolute top-3 right-3">
-            <span className={`px-5 py-2 rounded-full text-xs font-bold text-white shadow-lg uppercase tracking-wider ${degree_type === 'thesis' ? 'bg-blue-600' : 'bg-purple-600'}`}>
-              {degree_type === 'thesis' ? 'Thesis' : 'Dissertation'}
-            </span>
-          </div>
-        )}
+    <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 cursor-pointer flex flex-col h-full">
+  {/* Header badge */}
+  <div className="h-10 bg-gradient-to-br from-blue-50 to-indigo-50 relative overflow-hidden">
+    {degree_type && (
+      <div className="absolute top-3 right-3">
+        <span
+          className={`px-5 py-2 rounded-full text-xs font-bold text-white shadow-lg uppercase tracking-wider ${
+            degree_type === 'thesis' ? 'bg-blue-600' : 'bg-purple-600'
+          }`}
+        >
+          {degree_type === 'thesis' ? 'Thesis' : 'Dissertation'}
+        </span>
       </div>
+    )}
+  </div>
 
-      <div className="p-6">
-        <h3 className="text-xl font-bold text-gray-900 mb-4 line-clamp-2 group-hover:text-blue-700 transition">{title}</h3>
-        <div className="space-y-3 text-sm">
-          {university && (
-            <button
-              onClick={handleUniversityClick}
-              className="font-semibold text-green-700 hover:underline text-left p-0 bg-transparent border-none cursor-pointer"
-            >
-              {university}
-            </button>
-          )}
-          <p className="text-gray-700"><span className="text-gray-500 font-medium">Author by:</span> {authors}</p>
-          {supervisor_name && <p className="text-gray-700"><span className="text-gray-500 font-medium">Supervisor by:</span> {supervisor_name}</p>}
-          {submission_type && <p className="text-indigo-700 font-semibold"><span className="text-gray-500 font-medium">Field:</span> {fieldName}</p>}
-        </div>
-        <p className="text-gray-600 line-clamp-3 text-sm mt-5 mb-6 leading-relaxed">{description || 'No description available.'}</p>
-        <div className="flex items-center text-blue-600 font-semibold text-sm group-hover:text-blue-800">
-          <div
-            onClick={(e) => {
-              e.stopPropagation();
-              router.push(`/books/${id}`);
-            }}
-            className="cursor-pointer group transform transition-all hover:scale-105"
-          >
-            abstract
-          </div>
-          <svg className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </div>
-      </div>
+  {/* Content area - takes available space */}
+  <div className="p-6 flex flex-col flex-1">
+    {/* Title */}
+    <h3 className="text-2xl font-bold text-gray-900 mb-4 line-clamp-2 group-hover:text-blue-700 transition">
+      {title}
+    </h3>
+
+    {/* Details */}
+    <div className="space-y-4 text-base flex-1">
+      {university && (
+        <button
+          onClick={handleUniversityClick}
+          className="font-semibold text-green-700 hover:underline text-left p-0 bg-transparent border-none cursor-pointer"
+        >
+          {university}
+        </button>
+      )}
+      <p className="text-gray-700">
+        <span className="text-gray-500 font-medium">Author by:</span> {authors}
+      </p>
+      {supervisor_name && (
+        <p className="text-gray-700">
+          <span className="text-gray-500 font-medium">Supervisor by:</span> {supervisor_name}
+        </p>
+      )}
+      {submission_type && (
+        <p className="text-indigo-700 font-semibold">
+          <span className="text-gray-500 font-medium">Field:</span> {fieldName}
+        </p>
+      )}
+
+      {/* Description - grows to fill space but stays clamped */}
+      <p className="text-gray-600 line-clamp-3 text-base mt-6 leading-relaxed">
+        {description || 'No description available.'}
+      </p>
     </div>
+
+    {/* Button fixed at the bottom */}
+    <div className="mt-8">
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          router.push(`/books/${id}`);
+        }}
+        className="inline-flex items-center px-6 py-3 bg-[#FFD700] text-black font-bold rounded-full hover:bg-yellow-400 transition-all shadow-md hover:shadow-lg transform hover:scale-105"
+      >
+        Abstract
+        <svg
+          className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-2"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
   );
 };
 

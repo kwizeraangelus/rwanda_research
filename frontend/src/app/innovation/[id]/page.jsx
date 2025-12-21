@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { use } from 'react';
+import Link from 'next/link';
 
 export default function InnovationDetailPage({ params }) {
   const resolvedParams = use(params);
@@ -153,9 +154,13 @@ const [loading, setLoading] = useState(true);
               <p className="text-2xl font-bold text-[#050A14] mb-6">
                 Interested in supporting this innovation?
               </p>
-              <button className="px-10 py-5 bg-[#FFD700] text-[#050A14] font-bold text-xl rounded-full shadow-2xl hover:scale-110 transition-all">
-                Contact Innovator
-              </button>
+             <Link
+                   href="/contact"
+                   className="inline-block px-10 py-5 bg-[#FFD700] text-[#050A14] font-bold text-xl rounded-full shadow-2xl hover:scale-110 transition-all"
+                 >
+                   Contact Innovator
+             </Link>
+              
             </div>
           </div>
         </div>

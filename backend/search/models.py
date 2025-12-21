@@ -14,6 +14,7 @@ class Innovation(models.Model):
     description = models.TextField()
     photo = models.ImageField(upload_to='innovations/', null=True, blank=True)
     status = models.CharField(max_length=20, choices=[('pending','Pending'),('approved','Approved'),('rejected','Rejected')], default='pending')
+    feedback = models.TextField(blank=True, null=True)
     sponsorship_needed = models.CharField(max_length=20, choices=[('sponsored','Sponsored'),('unsponsored','Unsponsored'),('no-need','No Need')], default='no-need')
     created_at = models.DateTimeField(auto_now_add=True)
 

@@ -12,7 +12,7 @@ import json
 def public_events(request):
     """Public events (upcoming events only)"""
     events = Event.objects.filter(date__gte=timezone.now(), status='approved').order_by('date')
-    serializer = EventSerializer(events, many=True)
+    serializer = EventSerializer(events, many=True, context={'request': request})
     return Response(serializer.data)
 
 @api_view(['GET'])

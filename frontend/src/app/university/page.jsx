@@ -17,19 +17,25 @@ export default function ResearcherDashboard() {
   const [uploading, setUploading] = useState(false);
   const [showUploadForm, setShowUploadForm] = useState(false);
 
-  // Step-by-step states
-  const [degreeType, setDegreeType] = useState('');
+  // Step-by-step upload states
+  const [degreeType, setDegreeType] = useState(''); // 'thesis' or 'dissertation'
   const [selectedField, setSelectedField] = useState('');
   const [showOtherField, setShowOtherField] = useState(false);
 
+  // Profile edit
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [profileForm, setProfileForm] = useState({
-    profile_image: null, age: '', phone: '', location: '', university: '', details: ''
+    profile_image: null,
+    age: '',
+    phone: '',
+    location: '',
+    university: '',
+    details: ''
   });
   const [imagePreview, setImagePreview] = useState(null);
 
+  // Form data for submission
   const [formData, setFormData] = useState({
-    submission_type: '',
     submission_type: '',
     university_name: '',
     title: '',
@@ -52,8 +58,10 @@ export default function ResearcherDashboard() {
         fetch('http://localhost:8000/api/my-uploads/', { credentials: 'include' })
       ]);
       if (!userRes.ok) throw new Error();
-      setUser(await userRes.json());
-      setUploads(await uploadsRes.json());
+      const userData = await userRes.json();
+      const uploadsData = await uploadsRes.json();
+      setUser(userData);
+      setUploads(uploadsData);
     } catch {
       router.push('/login');
     } finally {
@@ -61,8 +69,7 @@ export default function ResearcherDashboard() {
     }
   };
 
-  const handleFieldChange = (e) => {
-    const value = e.target.value;
+  const handleFieldChange = (value) => {
     setSelectedField(value);
     setShowOtherField(value === 'other');
   };
@@ -75,16 +82,19 @@ export default function ResearcherDashboard() {
     }));
   };
 
+  // Auto-generate submission_type
   useEffect(() => {
     if (degreeType && selectedField && selectedField !== 'other') {
+      const cleanField = selectedField.toLowerCase().replace(/\s+/g, '_');
       setFormData(prev => ({
         ...prev,
-        submission_type: `${degreeType}-${selectedField}`
+        submission_type: `${degreeType}-${cleanField}`
       }));
-    } else if (degreeType && selectedField === 'other' && formData.other_field) {
+    } else if (degreeType && selectedField === 'other' && formData.other_field.trim()) {
+      const cleanField = formData.other_field.toLowerCase().replace(/\s+/g, '_');
       setFormData(prev => ({
         ...prev,
-        submission_type: `${degreeType}-${formData.other_field.toLowerCase().replace(/\s+/g, '_')}`
+        submission_type: `${degreeType}-${cleanField}`
       }));
     }
   }, [degreeType, selectedField, formData.other_field]);
@@ -144,11 +154,11 @@ export default function ResearcherDashboard() {
   const openEditProfile = () => {
     setProfileForm({
       profile_image: null,
-      details: user?.details || '',
       age: user?.age || '',
       phone: user?.phone || '',
       location: user?.location || '',
       university: user?.university || '',
+      details: user?.details || '',
     });
     setImagePreview(user?.profile_image ? `http://localhost:8000${user.profile_image}` : null);
     setShowEditProfile(true);
@@ -158,7 +168,7 @@ export default function ResearcherDashboard() {
     e.preventDefault();
     const data = new FormData();
     Object.entries(profileForm).forEach(([k, v]) => {
-      if (v) data.append(k, v);
+      if (v !== '' && v !== null) data.append(k, v);
     });
 
     const res = await fetch('http://localhost:8000/api/update/', {
@@ -171,7 +181,9 @@ export default function ResearcherDashboard() {
       const updated = await res.json();
       setUser(updated);
       setShowEditProfile(false);
-      alert('Profile updated!');
+      alert('Profile updated successfully!');
+    } else {
+      alert('Failed to update profile');
     }
   };
 
@@ -183,206 +195,272 @@ export default function ResearcherDashboard() {
     }
   };
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center text-2xl font-semibold text-gray-600">
-      Loading...
-    </div>
-  );
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-2xl font-semibold text-gray-600">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
-
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-800">Research Portal</h1>
-          <div className="bg-emerald-50 text-emerald-700 px-5 py-2 rounded-full font-medium">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full shadow-lg"></div>
+            <h1 className="text-2xl font-bold text-gray-800">Research Portal</h1>
+          </div>
+          <div className="bg-blue-50 text-blue-700 px-5 py-2 rounded-full font-medium">
             {user?.user?.username}
           </div>
         </div>
       </header>
 
-      {/* MAIN LAYOUT */}
-      <div className="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 lg:grid-cols-3 gap-10 h-[calc(100vh-120px)]">
-
-        {/* BODY — SCROLLABLE */}
-        <div className="lg:col-span-2 space-y-10 overflow-y-auto pr-4">
-
+      {/* Main Layout */}
+      <div className="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 lg:grid-cols-3 gap-10">
+        {/* Main Content - Scrollable */}
+        <div className="lg:col-span-2 space-y-10">
+          {/* Guidelines */}
           <div className="bg-amber-50 border border-amber-200 rounded-2xl p-8">
             <h3 className="text-xl font-bold text-amber-900 mb-3">Important Guidelines</h3>
-            <p className="text-amber-800">
-              Submit original work only. Review within 48 hours.
+            <p className="text-amber-800 leading-relaxed">
+              Submit original work only. Include Abstract, Introduction, Methodology, Results, Conclusion & References. Review within 48 hours.
             </p>
           </div>
 
+          {/* Upload Button */}
           <button
-            onClick={() => setShowUploadForm(!showUploadForm)}
-            className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xl py-6 rounded-2xl shadow-xl transition"
+            onClick={() => {
+              setShowUploadForm(!showUploadForm);
+              if (!showUploadForm) resetForm();
+            }}
+            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xl py-6 rounded-2xl shadow-xl transition transform hover:scale-105 flex items-center justify-center gap-3"
           >
-            🎓 {showUploadForm ? 'Cancel' : 'Upload New Research'}
+            <span className="text-3xl">🎓</span> {showUploadForm ? 'Cancel Upload' : 'Upload New Research'}
           </button>
 
-          {/* Upload Form - unchanged for brevity */}
+          {/* Smart Upload Form */}
           {showUploadForm && (
-            <div className="bg-white rounded-2xl shadow-2xl border-2 border-blue-100 p-8">
+            <div className="bg-white rounded-2xl shadow-2xl border-2 border-blue-100 p-8 max-h-[70vh] overflow-hidden">
               <h3 className="text-2xl font-bold text-gray-800 text-center mb-10">Submit Your Research</h3>
-              {/* ... your existing upload form steps ... */}
+
+              {/* Step 1: Degree Type */}
+              {!degreeType && (
+                <div className="text-center mb-12">
+                  <p className="text-xl font-semibold text-gray-700 mb-8">What type of academic work are you submitting?</p>
+                  <div className="grid grid-cols-2 gap-8 max-w-md mx-auto">
+                    <button onClick={() => setDegreeType('thesis')} className="py-8 bg-gradient-to-br from-blue-500 to-blue-600 text-white font-bold text-2xl rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition">
+                      Thesis
+                    </button>
+                    <button onClick={() => setDegreeType('dissertation')} className="py-8 bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-bold text-2xl rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition">
+                      Dissertation
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 2: Field Selection */}
+              {degreeType && !selectedField && (
+                <div className="text-center overflow-y-auto max-h-96 pb-4">
+                  <p className="text-xl font-semibold text-gray-700 mb-8">Select your field of study</p>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                    {ACADEMIC_FIELDS.map(field => (
+                      <button
+                        key={field}
+                        onClick={() => handleFieldChange(field.toLowerCase().replace(/\s+/g, '_'))}
+                        className="py-6 bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 hover:border-blue-500 text-blue-800 font-bold rounded-xl transition transform hover:scale-105 shadow-md"
+                      >
+                        {field}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => handleFieldChange('other')}
+                      className="py-6 bg-gray-100 hover:bg-gray-200 border-2 border-gray-300 hover:border-gray-500 font-bold rounded-xl transition hover:scale-105"
+                    >
+                      Other
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 3: Custom Field */}
+              {showOtherField && !formData.other_field && (
+                <div className="max-w-md mx-auto mt-8">
+                  <input
+                    type="text"
+                    placeholder="Enter your field (e.g., Psychology)"
+                    className="w-full p-5 text-lg border-2 border-blue-300 rounded-xl focus:border-blue-600 outline-none"
+                    onChange={(e) => setFormData(prev => ({ ...prev, other_field: e.target.value }))}
+                  />
+                </div>
+              )}
+
+              {/* Final Form - SCROLLABLE CONTAINER */}
               {formData.submission_type && (
-                <form onSubmit={handleSubmit} className="mt-10 space-y-6">
-                  {/* ... form fields ... */}
-                  <button
-                    type="submit"
-                    disabled={uploading}
-                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-5 rounded-xl text-lg shadow-lg disabled:opacity-70"
-                  >
+                <div className="mt-10 space-y-6 max-h-[50vh] overflow-y-auto pr-2 -mr-2">
+                  <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6 text-center sticky top-0 bg-white z-10">
+                    <p className="text-sm text-blue-600">Selected Category</p>
+                    <p className="text-2xl font-bold text-blue-900">
+                      {degreeType.charAt(0).toUpperCase() + degreeType.slice(1)} -{' '}
+                      {selectedField === 'other' ? formData.other_field : selectedField.replace(/_/g, ' ')}
+                    </p>
+                  </div>
+
+                  <input name="university_name" placeholder="University Name *" onChange={handleInputChange} required className="w-full p-4 border border-gray-300 rounded-xl" />
+                  <input name="title" placeholder="Title *" onChange={handleInputChange} required className="w-full p-4 border border-gray-300 rounded-xl" />
+                  <input name="authors" placeholder="Authors *" onChange={handleInputChange} required className="w-full p-4 border border-gray-300 rounded-xl" />
+                  <input name="supervisor_name" placeholder="Supervisor Name *" onChange={handleInputChange} required className="w-full p-4 border border-gray-300 rounded-xl bg-blue-50" />
+                  <input name="year" type="number" placeholder="Year *" onChange={handleInputChange} required className="w-full p-4 border border-gray-300 rounded-xl" />
+                  <textarea name="description" placeholder="Brief description / Abstract *" rows={4} onChange={handleInputChange} required className="w-full p-4 border border-gray-300 rounded-xl resize-none" />
+                  <input type="file" name="file" accept=".pdf,.doc,.docx" onChange={handleInputChange} required className="w-full p-4 border-2 border-dashed border-blue-300 rounded-xl bg-blue-50 file:bg-blue-600 file:text-white file:py-3 file:px-8 file:rounded-lg" />
+
+                  <button type="submit" disabled={uploading} className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-5 rounded-xl text-lg shadow-lg disabled:opacity-70">
                     {uploading ? 'Submitting...' : 'Submit Research'}
                   </button>
-                </form>
+                </div>
               )}
             </div>
           )}
 
-          {/* UPLOADS */}
+          {/* My Uploads - With Feedback Support */}
           <div className="bg-white rounded-2xl shadow-xl p-8">
-            <h3 className="text-3xl font-bold text-center mb-8">My Uploads</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {uploads.map(upload => (
-                <div key={upload.id} className="rounded-2xl shadow-lg border-2 border-emerald-200 bg-emerald-50">
-                  <div className="p-6 text-center">
-                    <h4 className="font-bold">{upload.title}</h4>
-                    <span className={`inline-block mt-3 px-4 py-2 rounded-full text-white text-sm ${getStatusBadge(upload.status)}`}>
-                      {upload.status}
-                    </span>
+            <h3 className="text-3xl font-bold text-gray-800 text-center mb-10">My Uploads</h3>
+            {uploads.length === 0 ? (
+              <p className="text-center text-gray-500 py-16 text-lg">No uploads yet. Start sharing your research!</p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {uploads.map(upload => (
+                  <div
+                    key={upload.id}
+                    onClick={() => router.push(`/book/${upload.id}`)}
+                    className="cursor-pointer group transform transition-all hover:scale-105"
+                  >
+                    <div
+                      className="rounded-2xl overflow-hidden shadow-xl border-2 bg-gradient-to-br from-blue-50 to-indigo-50 relative"
+                      style={{ borderColor: upload.status === 'approved' ? '#10b981' : upload.status === 'rejected' ? '#ef4444' : '#f59e0b' }}
+                    >
+                      <div className="h-64 flex flex-col items-center justify-center">
+                        <span className="text-9xl">🎓</span>
+                        <p className="text-2xl font-medium text-gray-600 mt-4">THESIS</p>
+                      </div>
+                      <div className={`absolute top-4 right-4 px-5 py-2 rounded-full text-sm font-bold text-white shadow-lg ${getStatusBadge(upload.status)}`}>
+                        {upload.status.charAt(0).toUpperCase() + upload.status.slice(1)}
+                      </div>
+                    </div>
+
+                    <div className="mt-6 text-center">
+                      <h4 className="font-bold text-gray-800 text-lg line-clamp-2">{upload.title}</h4>
+                      <p className="text-gray-600 mt-1">{upload.year}</p>
+                      {upload.supervisor_name && <p className="text-sm text-blue-700 mt-2">Supervisor: {upload.supervisor_name}</p>}
+
+                      {/* Feedback Box */}
+                      {upload.feedback && (
+                        <div className={`mt-4 p-4 rounded-xl text-sm font-medium border-l-4 ${upload.status === 'rejected' ? 'bg-red-50 border-red-500 text-red-800' : 'bg-amber-50 border-amber-500 text-amber-800'}`}>
+                          <p className="font-bold">{upload.status === 'rejected' ? 'Reason:' : 'Note:'}</p>
+                          <p className="mt-1 whitespace-pre-wrap">{upload.feedback}</p>
+                        </div>
+                      )}
+
+                      {upload.status === 'approved' && !upload.feedback && (
+                        <div className="mt-4 p-4 rounded-xl bg-emerald-50 border-l-4 border-emerald-500 text-emerald-800 text-sm">
+                          Congratulations! Your work is now public.
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* PROFILE — STATIC */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 border sticky top-24 h-fit">
-          <h3 className="text-2xl font-bold text-center mb-6">My Profile</h3>
-
-          <div className="w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden border-4 border-emerald-500">
+        {/* Profile Sidebar */}
+        <div className="bg-white rounded-2xl shadow-xl p-8 h-fit border sticky top-24">
+          <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">My Profile</h3>
+          <div className="w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden border-4 border-blue-500 shadow-xl">
             {user?.profile_image ? (
-              <Image src={`http://localhost:8000${user.profile_image}`} width={128} height={128} alt="Profile" unoptimized />
+              <Image src={`http://localhost:8000${user.profile_image}`} alt="Profile" width={128} height={128} className="w-full h-full object-cover" unoptimized />
             ) : (
-              <div className="bg-emerald-500 w-full h-full flex items-center justify-center text-white text-3xl">
-                User
+              <div className="bg-gradient-to-br from-blue-400 to-indigo-500 w-full h-full flex items-center justify-center text-white text-5xl font-bold">
+                {user?.user?.username?.[0]?.toUpperCase() || 'U'}
               </div>
             )}
           </div>
 
-          <div className="space-y-3 text-gray-700">
+          <div className="space-y-4 text-gray-700">
             <div><strong>Name:</strong> {user?.user?.username}</div>
             <div><strong>Email:</strong> {user?.user?.email}</div>
+            {user?.age && <div><strong>Age:</strong> {user.age}</div>}
             {user?.phone && <div><strong>Phone:</strong> {user.phone}</div>}
             {user?.location && <div><strong>Location:</strong> {user.location}</div>}
             {user?.university && <div><strong>University:</strong> {user.university}</div>}
             {user?.details && (
               <div>
-                <strong>Descrition:</strong>
-                <p className="mt-2 text-gray-600 leading-relaxed break-words whitespace-pre-wrap">
-                  {user.details}
-                </p>
+                <strong>Bio:</strong>
+                <p className="mt-2 text-gray-600 leading-relaxed whitespace-pre-wrap">{user.details}</p>
               </div>
             )}
           </div>
 
           <button
-            className="mt-8 w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold py-4 rounded-xl shadow-lg"
+            onClick={openEditProfile}
+            className="mt-8 w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg transition"
           >
             Edit Profile
           </button>
         </div>
       </div>
 
-      {/* Edit Profile Modal - FIXED SCROLL ISSUE */}
+      {/* Edit Profile Modal */}
       {showEditProfile && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full my-8 max-h-screen overflow-y-auto">
-            <div className="p-8">
-              <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">Edit Profile</h3>
-              <form onSubmit={saveProfile} className="space-y-6">
-                <div className="flex flex-col items-center">
-                  <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-blue-500 mb-4">
-                    {imagePreview ? 
-                      <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" /> :
-                      <div className="bg-gray-200 w-full h-full flex items-center justify-center text-gray-500">No Image</div>
-                    }
-                  </div>
-                  <label className="cursor-pointer">
-                    <span className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">Choose Photo</span>
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      onChange={e => {
-                        const file = e.target.files[0];
-                        if (file) {
-                          setProfileForm({...profileForm, profile_image: file});
-                          setImagePreview(URL.createObjectURL(file));
-                        }
-                      }} 
-                      className="hidden" 
-                    />
-                  </label>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8">
+            <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">Edit Profile</h3>
+            <form onSubmit={saveProfile} className="space-y-6">
+              <div className="flex flex-col items-center">
+                <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-blue-500 mb-4">
+                  {imagePreview ? (
+                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="bg-gray-200 w-full h-full flex items-center justify-center text-gray-500">No Image</div>
+                  )}
                 </div>
+                <label className="cursor-pointer">
+                  <span className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">Choose Photo</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        setProfileForm(prev => ({ ...prev, profile_image: file }));
+                        setImagePreview(URL.createObjectURL(file));
+                      }
+                    }}
+                    className="hidden"
+                  />
+                </label>
+              </div>
 
-                <input 
-                  type="number" 
-                  placeholder="Age" 
-                  value={profileForm.age} 
-                  onChange={e => setProfileForm(p => ({...p, age: e.target.value}))} 
-                  className="w-full p-4 border border-gray-300 rounded-xl" 
-                />
-                <input 
-                  type="tel" 
-                  placeholder="Phone" 
-                  value={profileForm.phone} 
-                  onChange={e => setProfileForm(p => ({...p, phone: e.target.value}))} 
-                  className="w-full p-4 border border-gray-300 rounded-xl" 
-                />
-                <input 
-                  type="text" 
-                  placeholder="Location" 
-                  value={profileForm.location} 
-                  onChange={e => setProfileForm(p => ({...p, location: e.target.value}))} 
-                  className="w-full p-4 border border-gray-300 rounded-xl" 
-                />
-                <input 
-                  type="text" 
-                  placeholder="University" 
-                  value={profileForm.university} 
-                  onChange={e => setProfileForm(p => ({...p, university: e.target.value}))} 
-                  className="w-full p-4 border border-gray-300 rounded-xl" 
-                />
-                <textarea
-                  placeholder="Short bio or research interests (will be shown publicly)"
-                  rows="5"
-                  value={profileForm.details}
-                  onChange={e => setProfileForm(p => ({ ...p, details: e.target.value }))}
-                  className="w-full p-5 text-lg border-2 border-gray-300 rounded-xl resize-none"
-                />
+              <input type="number" placeholder="Age" value={profileForm.age} onChange={e => setProfileForm(p => ({ ...p, age: e.target.value }))} className="w-full p-4 border border-gray-300 rounded-xl" />
+              <input type="tel" placeholder="Phone" value={profileForm.phone} onChange={e => setProfileForm(p => ({ ...p, phone: e.target.value }))} className="w-full p-4 border border-gray-300 rounded-xl" />
+              <input type="text" placeholder="Location" value={profileForm.location} onChange={e => setProfileForm(p => ({ ...p, location: e.target.value }))} className="w-full p-4 border border-gray-300 rounded-xl" required />
+              <input type="text" placeholder="University" value={profileForm.university} onChange={e => setProfileForm(p => ({ ...p, university: e.target.value }))} className="w-full p-4 border border-gray-300 rounded-xl" />
+              <textarea
+                placeholder="Short bio (optional)"
+                rows={4}
+                value={profileForm.details}
+                onChange={e => setProfileForm(p => ({ ...p, details: e.target.value }))}
+                className="w-full p-4 border border-gray-300 rounded-xl resize-none"
+              />
 
-                {/* Buttons always visible at bottom */}
-                <div className="flex gap-4 pt-6 border-t border-gray-200 mt-6 sticky bottom-0 bg-white -mx-8 px-8 pb-8">
-                  <button 
-                    type="submit" 
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition"
-                  >
-                    Save Changes
-                  </button>
-                  <button 
-                    type="button" 
-                    onClick={() => setShowEditProfile(false)} 
-                    className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-4 rounded-xl transition"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            </div>
+              <div className="flex gap-4 pt-4">
+                <button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl">Save Changes</button>
+                <button type="button" onClick={() => setShowEditProfile(false)} className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-4 rounded-xl">Cancel</button>
+              </div>
+            </form>
           </div>
         </div>
       )}

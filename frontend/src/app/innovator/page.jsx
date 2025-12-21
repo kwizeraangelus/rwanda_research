@@ -100,7 +100,7 @@ export default function InnovationDashboard() {
     }
   };
 
-  // Edit Profile Functions (same as before)
+  // Edit Profile Functions
   const openEditProfile = () => {
     setProfileForm({
       profile_image: null,
@@ -296,14 +296,35 @@ export default function InnovationDashboard() {
 
                       <div className="p-6">
                         <h4 className="font-bold text-xl text-gray-800 line-clamp-2">{innovation.name}</h4>
-                       <p className="text-sm text-gray-600 mt-2">
-  Submitted{' '}
-  {innovation.created_at && !isNaN(new Date(innovation.created_at))
-    ? format(new Date(innovation.created_at), 'PPP')
-    : 'Unknown date'}
-</p>
+                        <p className="text-sm text-gray-600 mt-2">
+                          Submitted{' '}
+                          {innovation.created_at && !isNaN(new Date(innovation.created_at))
+                            ? format(new Date(innovation.created_at), 'PPP')
+                            : 'Unknown date'}
+                        </p>
 
                         <p className="text-gray-700 mt-3 line-clamp-3">{innovation.description}</p>
+
+                        {/* FEEDBACK DISPLAY - NEW ADDITION */}
+                        {innovation.feedback && (
+                          <div className={`mt-5 p-4 rounded-xl text-sm font-medium border-l-4 ${
+                            status === 'rejected'
+                              ? 'bg-red-50 border-red-500 text-red-800'
+                              : 'bg-amber-50 border-amber-500 text-amber-800'
+                          }`}>
+                            <p className="font-bold mb-1">
+                              {status === 'rejected' ? 'Reason for Rejection:' : 'Admin Note:'}
+                            </p>
+                            <p className="whitespace-pre-wrap break-words">{innovation.feedback}</p>
+                          </div>
+                        )}
+
+                        {/* Optional success message for approved */}
+                        {status === 'approved' && !innovation.feedback && (
+                          <div className="mt-5 p-4 rounded-xl bg-emerald-50 border-l-4 border-emerald-500 text-emerald-800 text-sm font-medium">
+                            <p>Congratulations! Your innovation is now visible to the public.</p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   );

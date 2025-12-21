@@ -91,7 +91,7 @@ class InnovationSerializer(serializers.ModelSerializer):
         model = Innovation
         fields = [
             'id', 'name', 'description', 'photo', 'status',
-            'sponsorship_needed', 'created_at', 'innovator', 'innovator_username'
+            'sponsorship_needed', 'created_at', 'innovator', 'innovator_username','feedback'
         ]
         read_only_fields = ['innovator', 'created_at', 'status']
 
@@ -125,6 +125,7 @@ class InnovationAdminSerializer(serializers.ModelSerializer):
             'sponsorship_display',
             'innovator',
             'innovator_name',
+            'feedback'
             'created_at'
         ]
         read_only_fields = ['innovator', 'status', 'created_at']
