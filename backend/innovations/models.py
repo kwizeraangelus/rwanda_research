@@ -47,7 +47,7 @@ class Upload(models.Model):
 )
     feedback = models.TextField(blank=True, null=True)
     # Add these fields
-    likes_count = models.IntegerField(default=0)
+
     views_count = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -94,17 +94,3 @@ class Rating(models.Model):
         return f"{self.document.title} - {self.rating} stars"
     
 
-
-class Like(models.Model):
-    upload = models.ForeignKey(
-        Upload, 
-        on_delete=models.CASCADE, 
-        related_name='likes'
-    )
-    ip_address = models.GenericIPAddressField()  # Store IP address
-    user_agent = models.TextField(blank=True, null=True)  # Optional: browser info
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    
-    class Meta:
-        unique_together = ['upload', 'ip_address']

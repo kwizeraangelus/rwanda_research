@@ -12,6 +12,8 @@ export default function RegisterPage() {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
+    first_name: '',    // ← Add
+    last_name: '',
     phone_number: '',
     university_name: '',
   });
@@ -100,8 +102,34 @@ export default function RegisterPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* === Form fields === */}
 
-          {/* Username */}
+
+          <div>
+  <label htmlFor="first_name" className="block text-sm font-bold text-gray-700 mb-1">First Name</label>
+  <input
+    type="text"
+    id="first_name"
+    name="first_name"
+    required
+    value={formData.first_name || ''}
+    onChange={handleInputChange}
+    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8c9c6f]"
+  />
+</div>
+
+<div>
+  <label htmlFor="last_name" className="block text-sm font-bold text-gray-700 mb-1">Last Name</label>
+  <input
+    type="text"
+    id="last_name"
+    name="last_name"
+    required
+    value={formData.last_name || ''}
+    onChange={handleInputChange}
+    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8c9c6f]"
+  />
+</div>
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-1">
               Username
@@ -115,8 +143,8 @@ export default function RegisterPage() {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:border-[#FFD700]"
             />
           </div>
+          
 
-          {/* Email */}
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-1">
               Email

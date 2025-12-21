@@ -7,8 +7,8 @@ from rest_framework.filters import SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
 from rest_framework.parsers import MultiPartParser, FormParser
-from django.db.models import Avg
-from .models import Upload,Like
+from django.db.models import Avg,Q
+from .models import Upload
 from rest_framework import generics
 from .serializers import UploadSerializer
 from profiles.models import ResearcherProfile
@@ -305,10 +305,43 @@ class PublicUploadListAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         queryset = Upload.objects.filter(status='approved').order_by('-uploaded_at')
+
+        # Optional: filter by user (you already had this)
         user_id = self.request.query_params.get('user')
         if user_id is not None:
-            queryset = queryset.filter(user_id=user_id)  # ← UUID works!
+            queryset = queryset.filter(user_id=user_id)
+
+        # Degree type filter (thesis / dissertation)
+        degree_type = self.request.query_params.get('degree_type')
+        if degree_type in ['thesis', 'dissertation']:
+            queryset = queryset.filter(degree_type=degree_type)
+
+        # Global search across multiple fields
+        search = self.request.query_params.get('search')
+        if search:
+            search = search.strip()
+            if search:
+                queryset = queryset.filter(
+                    Q(title__icontains=search) |
+                    Q(authors__icontains=search) |
+                    Q(supervisor_name__icontains=search) |
+                    Q(university__icontains=search) |
+                    Q(description__icontains=search) |
+                    Q(submission_type__icontains=search)
+                )
+
+        # Field keywords filter (from frontend: field_keywords=engineering,electrical,...)
+        field_keywords = self.request.query_params.get('field_keywords')
+        if field_keywords:
+            keywords = [kw.strip() for kw in field_keywords.split(',') if kw.strip()]
+            if keywords:
+                q_objects = Q()
+                for keyword in keywords:
+                    q_objects |= Q(submission_type__icontains=keyword)
+                queryset = queryset.filter(q_objects)
+
         return queryset
+
 
 
 # DETAIL: /api/innovations/public-detail/16/
@@ -338,66 +371,6 @@ def get_client_ip(request):
         ip = request.META.get('REMOTE_ADDR')
     return ip
 
-@csrf_exempt
-@require_POST
-def like_upload(request, id):
-    try:
-        upload = Upload.objects.get(id=id)
-        ip_address = get_client_ip(request)
-        
-        # Check if this IP already liked this upload
-        existing_like = Like.objects.filter(
-            upload=upload,
-            ip_address=ip_address
-        ).first()
-        
-        if existing_like:
-            return JsonResponse({
-                'liked': True,
-                'likes_count': upload.likes_count,
-                'message': 'Already liked from this IP'
-            })
-        
-        # Create new like
-        Like.objects.create(
-            upload=upload,
-            ip_address=ip_address
-        )
-        
-        # Update likes count
-        upload.likes_count += 1
-        upload.save()
-        
-        return JsonResponse({
-            'liked': True,
-            'likes_count': upload.likes_count
-        })
-    except Upload.DoesNotExist:
-        return JsonResponse({'error': 'Upload not found'}, status=404)
-
-@csrf_exempt
-@require_POST
-def unlike_upload(request, id):
-    try:
-        upload = Upload.objects.get(id=id)
-        ip_address = get_client_ip(request)
-        
-        # Delete like for this IP
-        deleted_count = Like.objects.filter(
-            upload=upload,
-            ip_address=ip_address
-        ).delete()[0]
-        
-        if deleted_count > 0:
-            upload.likes_count = max(0, upload.likes_count - 1)
-            upload.save()
-        
-        return JsonResponse({
-            'liked': False,
-            'likes_count': upload.likes_count
-        })
-    except Upload.DoesNotExist:
-        return JsonResponse({'error': 'Upload not found'}, status=404)
 
 
 
@@ -446,7 +419,7 @@ def approved_books(request):
                 'author': book.authors,
                 'category': book.category_display,
                 'submission_type': book.submission_type,
-                'likes_count': book.likes_count,
+                
                 'views_count': book.views_count,
                 'rating': round(avg_rating, 1),
                 'cover_image_url': book.cover_image.url if book.cover_image else None,

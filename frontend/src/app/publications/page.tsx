@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation'; // Correct import for App Router
 
 // ──────────────────────────────────────────────────────
-// Types (unchanged)
+// Types & Constants (unchanged)
 // ──────────────────────────────────────────────────────
 interface Publication {
   id: number;
@@ -12,7 +13,6 @@ interface Publication {
   status: string;
   authors: string;
   description: string;
-  cover_image: string | null;
   file_url: string;
   supervisor_name?: string;
   submission_type?: string;
@@ -33,9 +33,6 @@ interface Counts {
   education: number;
 }
 
-// ──────────────────────────────────────────────────────
-// FIXED FIELD NAMES (unchanged)
-// ──────────────────────────────────────────────────────
 const CORE_FIELDS = [
   'Engineering',
   'Medicine/Health Sciences',
@@ -80,39 +77,29 @@ const formatFieldName = (submissionType?: string): string => {
 };
 
 // ──────────────────────────────────────────────────────
-// Publication Card (FIXED - with clickable university that doesn't nest <a> tags)
+// Publication Card (cleaned up navigation)
 // ──────────────────────────────────────────────────────
 const PublicationCard: React.FC<Publication> = ({
-  id, title, authors, description, cover_image,
+  id, title, authors, description,
   supervisor_name, university, degree_type, submission_type
 }) => {
-  const imageSrc = cover_image?.trim() || 'https://placehold.co/600x400/E0E7FF/1E40AF?text=No+Cover';
+  const router = useRouter();
   const fieldName = formatFieldName(submission_type);
 
   const handleUniversityClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // Use window.location to navigate without React Router
     if (university) {
-      window.location.href = `/university/${encodeURIComponent(university)}`;
+      router.push(`/university/${encodeURIComponent(university)}`);
     }
   };
 
   return (
-    <div 
-      onClick={() => {
-        // Use window.location to navigate without React Router
-        window.location.href = `/books/${id}`;
-      }}
+    <div
+    
       className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 cursor-pointer"
     >
-      <div className="h-56 bg-gradient-to-br from-blue-50 to-indigo-50 relative overflow-hidden">
-        <img
-          src={imageSrc}
-          alt={title}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-          onError={(e) => { e.currentTarget.src = 'https://placehold.co/600x400/E0E7FF/1E40AF?text=No+Cover'; }}
-        />
+      <div className="h-10 bg-gradient-to-br from-blue-50 to-indigo-50 relative overflow-hidden">
         {degree_type && (
           <div className="absolute top-3 right-3">
             <span className={`px-5 py-2 rounded-full text-xs font-bold text-white shadow-lg uppercase tracking-wider ${degree_type === 'thesis' ? 'bg-blue-600' : 'bg-purple-600'}`}>
@@ -133,13 +120,21 @@ const PublicationCard: React.FC<Publication> = ({
               {university}
             </button>
           )}
-          <p className="text-gray-700"><span className="text-gray-500 font-medium">Author:</span> {authors}</p>
-          {supervisor_name && <p className="text-gray-700"><span className="text-gray-500 font-medium">Supervisor:</span> {supervisor_name}</p>}
+          <p className="text-gray-700"><span className="text-gray-500 font-medium">Author by:</span> {authors}</p>
+          {supervisor_name && <p className="text-gray-700"><span className="text-gray-500 font-medium">Supervisor by:</span> {supervisor_name}</p>}
           {submission_type && <p className="text-indigo-700 font-semibold"><span className="text-gray-500 font-medium">Field:</span> {fieldName}</p>}
         </div>
         <p className="text-gray-600 line-clamp-3 text-sm mt-5 mb-6 leading-relaxed">{description || 'No description available.'}</p>
         <div className="flex items-center text-blue-600 font-semibold text-sm group-hover:text-blue-800">
-          Read More
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/books/${id}`);
+            }}
+            className="cursor-pointer group transform transition-all hover:scale-105"
+          >
+            abstract
+          </div>
           <svg className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
@@ -150,7 +145,7 @@ const PublicationCard: React.FC<Publication> = ({
 };
 
 // ──────────────────────────────────────────────────────
-// Main Page (UNCHANGED)
+// Main Component
 // ──────────────────────────────────────────────────────
 export default function PublicationsPage() {
   const [publications, setPublications] = useState<Publication[]>([]);
@@ -165,24 +160,36 @@ export default function PublicationsPage() {
   const [degreeFilter, setDegreeFilter] = useState<'all' | 'thesis' | 'dissertation'>('all');
   const [selectedField, setSelectedField] = useState<string | null>(null);
 
+  const router = useRouter();
+
+  // Debounced search term
+  const debouncedSearchTerm = useMemo(() => {
+    let timeout: NodeJS.Timeout;
+    return (term: string) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => setSearchTerm(term), 500);
+    };
+  }, []);
+
+  // Build correct API URL
   const buildApiUrl = useCallback(() => {
     const params = new URLSearchParams();
 
+    // Global search across multiple fields (Django supports this via Q objects on backend)
     if (searchTerm.trim()) {
-      const term = searchTerm.trim();
-      params.append('search', term);
-      params.append('authors__icontains', term);
-      params.append('supervisor_name__icontains', term);
-      params.append('university__icontains', term);
-      params.append('submission_type__icontains', term);
+      params.append('search', searchTerm.trim()); // Expect backend to handle this as OR across fields
     }
 
-    if (degreeFilter !== 'all') params.append('degree_type', degreeFilter);
+    // Degree filter
+    if (degreeFilter !== 'all') {
+      params.append('degree_type', degreeFilter);
+    }
 
+    // Field filter using keywords (OR logic)
     if (selectedField && FIELD_KEYWORDS[selectedField]) {
-      FIELD_KEYWORDS[selectedField].forEach(keyword => {
-        params.append('submission_type__icontains', keyword);
-      });
+      const keywords = FIELD_KEYWORDS[selectedField];
+      // We'll pass as comma-separated list; backend should split and OR them
+      params.append('field_keywords', keywords.join(','));
     }
 
     const base = 'http://127.0.0.1:8000/api/innovations/public-list/';
@@ -193,10 +200,13 @@ export default function PublicationsPage() {
     setIsLoading(true);
     try {
       const url = buildApiUrl();
+      console.log('Fetching:', url); // Debug
       const res = await fetch(url, { cache: 'no-store' });
       if (res.ok) {
         const data: Publication[] = await res.json();
         setPublications(data.filter(p => p.status === 'approved'));
+      } else {
+        console.error('API error:', res.status);
       }
     } catch (err) {
       console.error('Fetch error:', err);
@@ -206,7 +216,10 @@ export default function PublicationsPage() {
   }, [buildApiUrl]);
 
   const fetchCounts = useCallback(async () => {
-    const url = `http://127.0.0.1:8000/api/innovations/public-counts/?degree_type=${degreeFilter === 'all' ? '' : degreeFilter}`;
+    let url = 'http://127.0.0.1:8000/api/innovations/public-counts/';
+    if (degreeFilter !== 'all') {
+      url += `?degree_type=${degreeFilter}`;
+    }
     try {
       const res = await fetch(url);
       if (res.ok) {
@@ -218,9 +231,10 @@ export default function PublicationsPage() {
     }
   }, [degreeFilter]);
 
+  // Trigger fetches
   useEffect(() => {
     fetchPublications();
-  }, [searchTerm, degreeFilter, selectedField]);
+  }, [fetchPublications]);
 
   useEffect(() => {
     fetchCounts();
@@ -228,10 +242,10 @@ export default function PublicationsPage() {
 
   return (
     <div className="min-h-screen bg-[#E0F2FE] text-gray-900">
-      {/* DARK NAVY TOP BAND — same height as old nav, no content */}
+      {/* DARK NAVY TOP BAND */}
       <div className="h-28 bg-[#050A14]" aria-hidden="true" />
 
-      {/* HERO — overlaps the dark band beautifully */}
+      {/* HERO */}
       <section className="relative -mt-28 pt-36 pb-20 text-center">
         <div className="max-w-4xl mx-auto px-6">
           <h1 className="text-5xl md:text-6xl font-bold text-[#050A14] mb-6">
@@ -252,15 +266,18 @@ export default function PublicationsPage() {
               <input
                 type="text"
                 placeholder="Search by title, author, supervisor, university, field..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                defaultValue={searchTerm}
+                onChange={(e) => debouncedSearchTerm(e.target.value)}
                 className="w-full pl-14 pr-12 py-5 rounded-full bg-white border-2 border-gray-200 text-gray-800 placeholder-gray-500 focus:outline-none focus:border-[#FFD700] focus:shadow-xl transition-all text-lg shadow-lg"
               />
               <svg className="absolute left-5 top-6 w-7 h-7 text-[#050A14]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               {searchTerm && (
-                <button onClick={() => setSearchTerm('')} className="absolute right-5 top-6 text-[#050A14] hover:text-red-600">
+                <button onClick={() => {
+                  setSearchTerm('');
+                  (document.querySelector('input') as HTMLInputElement).value = '';
+                }} className="absolute right-5 top-6 text-[#050A14] hover:text-red-600">
                   <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -269,7 +286,7 @@ export default function PublicationsPage() {
             </div>
           </div>
 
-          {/* Thesis / Dissertation Buttons */}
+          {/* Degree Buttons */}
           <div className="flex justify-center gap-12 mb-12">
             <button
               onClick={() => setDegreeFilter(degreeFilter === 'thesis' ? 'all' : 'thesis')}
@@ -319,7 +336,7 @@ export default function PublicationsPage() {
             })}
           </div>
 
-          {/* Results Grid */}
+          {/* Results */}
           {isLoading ? (
             <div className="text-center py-32">
               <div className="inline-block animate-spin rounded-full h-16 w-16 border-8 border-[#FFD700] border-t-transparent"></div>

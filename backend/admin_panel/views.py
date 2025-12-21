@@ -6,10 +6,11 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from django.contrib.auth.decorators import user_passes_test
 from innovations.models import Upload
+from search.models import Innovation
 from .serializers import AdminUploadSerializer
 from django.contrib.auth import get_user_model
 from events.models import Event
-from .serializers import UserSerializer, EventSerializer
+from .serializers import UserSerializer, EventSerializer,InnovationAdminSerializer
 
 
 
@@ -28,12 +29,15 @@ def admin_dashboard(request):
     total_books = Upload.objects.count()
     pending_count = pending.count()
 
+    pending_innovations_count = Innovation.objects.filter(status='pending').count()
     serializer = AdminUploadSerializer(pending, many=True)
     return Response({
         'kpis': {
             'total_users': total_users,
             'total_books': total_books,
             'pending_count': pending_count,
+            'pending_innovations_count': pending_innovations_count
+
         },
         'pending': serializer.data
     })
@@ -315,3 +319,147 @@ def delete_user(request, user_id):
         return Response({'error': 'User not found'}, status=404)
     except Exception as e:
         return Response({'error': str(e)}, status=500)
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.permissions import IsAdminUser
+from django.shortcuts import get_object_or_404
+from search.models import Innovation
+from .serializers import InnovationSerializer
+
+class InnovationAdminViewSet(viewsets.ModelViewSet):
+    queryset = Innovation.objects.all()
+    serializer_class = InnovationSerializer
+    permission_classes = [IsAdminUser]  # Only admins can access these endpoints
+
+    def get_queryset(self):
+        # Only return pending innovations for the list endpoint
+        if self.action == 'list':
+            return Innovation.objects.filter(status='pending').select_related('innovator')
+        return super().get_queryset()
+
+    @action(detail=False, methods=['get'], url_path='pending')
+    def pending(self, request):
+        """GET /api/admin/innovations/pending/"""
+        innovations = Innovation.objects.filter(status='pending').select_related('innovator').order_by('-created_at')
+        serializer = self.get_serializer(innovations, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'], url_path='approve')
+    def approve(self, request, pk=None):
+        """POST /api/admin/innovations/<id>/approve/"""
+        innovation = get_object_or_404(Innovation, pk=pk, status='pending')
+        innovation.status = 'approved'
+        innovation.save()
+        return Response({'detail': 'Innovation approved'}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], url_path='reject')
+    def reject(self, request, pk=None):
+        """POST /api/admin/innovations/<id>/reject/"""
+        innovation = get_object_or_404(Innovation, pk=pk, status='pending')
+        feedback = request.data.get('feedback', '').strip()
+        if not feedback:
+            return Response({'detail': 'Feedback is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        innovation.status = 'rejected'
+        innovation.save()
+
+        # Optional: send email/notification to innovator with feedback
+        # e.g., send_mail(...)
+
+        return Response({'detail': 'Innovation rejected'}, status=status.HTTP_200_OK)
+
+    def destroy(self, request, *args, **kwargs):
+        """DELETE /api/admin/innovations/<id>/"""
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    # views.py
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@user_passes_test(is_admin)
+def approved_innovations(request):
+    innovations = Innovation.objects.filter(status='approved').order_by('-created_at')
+    serializer = InnovationAdminSerializer(innovations, many=True)
+    return Response({'innovations': serializer.data})
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated, IsAdminUser])  # Use DRF permission classes
+def update_innovation(request, id):  # Use 'pk' to match URL pattern
+    try:
+        innovation = Innovation.objects.get(id=id, status='approved')
+    except Innovation.DoesNotExist:
+        return Response(
+            {'error': 'Innovation not found or not approved'}, 
+            status=status.HTTP_404_NOT_FOUND
+        )
+    
+    # Use serializer for proper validation
+    serializer = InnovationAdminSerializer(
+        innovation, 
+        data=request.data, 
+        partial=True,  # Allow partial updates
+        context={'request': request}  # Pass request for context if needed
+    )
+    
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # Handle update logic (name, description, photo, sponsorship_needed)
+    # ... (use serializer or manual update)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAdminUser])
+def delete_innovation(request, id):  # ✅ id MUST be here
+    try:
+        innovation = Innovation.objects.get(id=id)
+    except Innovation.DoesNotExist:
+        return Response(
+            {"error": "Innovation not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    innovation.delete()
+    return Response(
+        {"message": "Innovation deleted successfully"},
+        status=status.HTTP_204_NO_CONTENT
+    )

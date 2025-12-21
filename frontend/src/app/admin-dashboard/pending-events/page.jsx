@@ -66,37 +66,37 @@ export default function PendingEventsPage() {
     } catch (err) { alert('Error'); }
   };
 
-  if (loading) return <div className="text-center py-32 text-3xl font-bold text-[#4a772e]">Loading Pending Events...</div>;
+  if (loading) return <div className="text-center py-32 text-3xl font-bold text-[#050A14]">Loading Pending Events...</div>;
 
   return (
-    <div className="min-h-screen bg-[#d8e5c7] p-6">
+    <div className="min-h-screen bg-[#E0F2FE] p-6">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold text-[#4a772e]">Pending Events Review</h1>
-          <a href="/admin" className="text-xl text-[#4a772e] hover:underline">Back to Dashboard</a>
+          <h1 className="text-4xl font-bold text-[#050A14]">Pending Events Review</h1>
+          <a href="/admin" className="text-xl text-[#050A14] hover:underline">Back to Dashboard</a>
         </div>
 
         {events.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-3xl shadow-2xl border-4 border-[#e0e0b7]">
+          <div className="text-center py-20 bg-white rounded-3xl shadow-2xl border-4 border-gray-200">
             <p className="text-2xl text-gray-500">No pending events to review</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {events.map(event => (
-              <div key={event.id} className="bg-white rounded-2xl shadow-xl border-2 border-[#e0e0b7] overflow-hidden hover:shadow-2xl transition">
+              <div key={event.id} className="bg-white rounded-2xl shadow-xl border-2 border-gray-200 overflow-hidden hover:shadow-2xl transition">
                 {/* Photo */}
                 {event.photo ? (
                   <img src={`http://localhost:8000${event.photo}`} alt={event.title}
                     className="w-full h-48 object-cover" />
                 ) : (
-                  <div className="bg-gradient-to-br from-[#8c9c6f] to-[#4a772e] h-48 flex items-center justify-center text-white text-5xl font-bold">
+                  <div className="bg-gradient-to-br from-[#4a772e] to-[#3a5f24] h-48 flex items-center justify-center text-white text-5xl font-bold">
                     {event.icon || 'Calendar'}
                   </div>
                 )}
 
                 {/* Content */}
                 <div className="p-6">
-                  <h3 className="text-2xl font-bold text-[#4a772e] mb-3 line-clamp-2">{event.title}</h3>
+                  <h3 className="text-2xl font-bold text-[#050A14] mb-3 line-clamp-2">{event.title}</h3>
                   
                   <div className="space-y-2 text-gray-700 mb-5">
                     <p className="flex items-center gap-2">

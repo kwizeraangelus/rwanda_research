@@ -17,12 +17,6 @@ urlpatterns = [
 
 
 
- path('uploads/public-list/<int:id>/like/', views.like_upload, name='like_upload'),
-    path('uploads/public-list/<int:id>/unlike/', views.unlike_upload, name='unlike_upload'),
-
-
-
-
 
    
 

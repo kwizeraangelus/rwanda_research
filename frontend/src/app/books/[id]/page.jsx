@@ -255,13 +255,13 @@ export default function BookDetailPage() {
           </div>
         )}
 
-        {/* Description Section with Share/Like Buttons */}
+        {/* Description Section with Share/ Buttons */}
         <section className="px-8 py-10 text-justify columns-1 md:columns-2 gap-8">
           <p className="text-lg leading-relaxed text-gray-800 first-letter:text-6xl first-letter:font-bold first-letter:text-green-700 first-letter:float-left first-letter:mr-3 mb-8">
             {book.description}
           </p>
           
-          {/* Share and Like Section - Under Description */}
+          {/* Share and  Section - Under Description */}
           <div className="mt-10 pt-6 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               {/* Share Button */}
@@ -281,28 +281,7 @@ export default function BookDetailPage() {
                 )}
               </div>
               
-              {/* Like Button */}
-              <button
-                onClick={handleLike}
-                className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition group"
-              >
-                {liked ? (
-                  <>
-                    <ThumbsUpFilled size={20} className="fill-current" />
-                    <span>Liked</span>
-                  </>
-                ) : (
-                  <>
-                    <ThumbsUp size={20} />
-                    <span>Like</span>
-                  </>
-                )}
-                {likeCount > 0 && (
-                  <span className="bg-white px-2 py-1 rounded-full text-xs font-bold">
-                    {likeCount}
-                  </span>
-                )}
-              </button>
+              
             </div>
             
             {/* Stats */}

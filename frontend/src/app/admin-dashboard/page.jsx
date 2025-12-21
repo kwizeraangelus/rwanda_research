@@ -501,7 +501,7 @@ export default function AdminDashboard() {
   if (loading) return <div className="text-center py-10 text-[#4a772e] font-bold">Loading...</div>;
 
   return (
-    <div className="min-h-screen bg-[#d8e5c7] p-4 md:p-6">
+    <div className="min-h-screen bg-[#E0F2FE] p-4 md:p-6">
       <h2 className="text-2xl md:text-3xl font-bold text-[#4a772e] text-center mb-6">
         Website Management Dashboard
       </h2>
@@ -519,14 +519,20 @@ export default function AdminDashboard() {
           </div>
           <div className="bg-[#8c9c6f] text-white p-4 md:p-6 rounded-lg shadow text-center flex-1 min-w-[150px] md:min-w-[200px]">
             <div className="text-2xl md:text-4xl font-bold">{data.kpis.pending_count || 0}</div>
-            <h3 className="text-sm md:text-base">Pending</h3>
+            <h3 className="text-sm md:text-base">Pending Books</h3>
+          </div>
+          
+          
+          <div className="bg-[#8c9c6f] text-white p-4 md:p-6 rounded-lg shadow text-center flex-1 min-w-[150px] md:min-w-[200px]">
+            <div className="text-2xl md:text-4xl font-bold">{data.kpis.pending_innovations_count || 0}</div>
+            <h3 className="text-sm md:text-base">Pending Innovations</h3>
           </div>
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {/* MAIN CONTENT AREA */}
-        <div className="lg:col-span-2 bg-[#f7f7e8] p-4 md:p-6 rounded-lg shadow">
+        <div className="lg:col-span-2 bg-white p-4 md:p-6 rounded-lg shadow">
           {/* PENDING BOOKS TAB */}
           {activeTab === 'pending' && (
             <>
@@ -633,7 +639,7 @@ export default function AdminDashboard() {
                                 value={feedbackInput}
                                 onChange={e => setFeedbackInput(e.target.value)}
                                 placeholder="Explain why this book is being rejected..."
-                                className="w-full p-3 border border-red-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                className="w-full p-3 border border-red-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-red-500 focus:border-transparent "
                                 rows="3"
                               />
                               <div className="mt-3 flex flex-wrap gap-2">
@@ -1493,16 +1499,25 @@ export default function AdminDashboard() {
         </div>
 
         {/* ADMIN SIDEBAR MENU */}
-        <div className="bg-[#f7f7e8] p-4 md:p-6 rounded-lg shadow space-y-3">
+        <div className="bg-white p-6 rounded-2xl shadow-xl space-y-4">
           <h3 className="text-xl font-bold text-[#4a772e] mb-4">Admin Tools</h3>
   <button 
     onClick={() => setActiveTab('pending')} 
-    className={`w-full py-3 px-4 text-left font-bold border rounded-lg transition flex items-center gap-3 ${activeTab === 'pending' ? 'bg-[#8c9c6f] text-white' : 'bg-[#d8e5c7] text-[#4a772e] border-[#8c9c6f] hover:bg-[#c4d5b0]'}`}
+    className={`w-full py-3 px-4 text-left font-bold border rounded-lg transition flex items-center gap-3 ${activeTab === 'pending' ? 'bg-[#8c9c6f] text-white' : 'bg-white text-[#4a772e] border-[#8c9c6f] hover:bg-[#c4d5b0]'}`}
   >
     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
     Pending Books
+  </button>
+  <button 
+  onClick={() => window.location.href = '/admin-dashboard/pending-innovations'}
+  className="w-full py-3 px-4 text-left font-bold border rounded-lg transition flex items-center gap-3 bg-[#d8e5c7] text-[#4a772e] border-[#8c9c6f] hover:bg-[#c4d5b0]"
+>
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+  Pending Innovations
   </button>
   <button 
   onClick={() => window.location.href = '/admin-dashboard/pending-events'}
@@ -1522,6 +1537,16 @@ export default function AdminDashboard() {
             </svg>
             Approved Books
           </button>
+           <button 
+  onClick={() => window.location.href = '/admin-dashboard/approved-innovation'}
+  className="w-full py-3 px-4 text-left font-bold border rounded-lg transition flex items-center gap-3 bg-[#d8e5c7] text-[#4a772e] border-[#8c9c6f] hover:bg-[#c4d5b0]"
+>
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+  approved Innovations
+  </button>
+          
           <button 
             onClick={() => setActiveTab('users')} 
             className={`w-full py-3 px-4 text-left font-bold border rounded-lg transition flex items-center gap-3 ${activeTab === 'users' ? 'bg-[#8c9c6f] text-white' : 'bg-[#d8e5c7] text-[#4a772e] border-[#8c9c6f] hover:bg-[#c4d5b0]'}`}

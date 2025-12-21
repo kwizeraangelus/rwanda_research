@@ -16,8 +16,20 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = ResearcherProfile
         fields = [
-            'id', 'user', 'national_id', 'age', 'phone', 
-            'degree', 'university', 'profile_image', 
+            'id', 'user','sdetails',  'age', 'phone', 
+            'location', 'university', 'profile_image', 
             'profile_complete'
         ]
         read_only_fields = ['profile_complete']
+
+
+
+
+# serializers.py
+class ResearcherProfileSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username')
+    profile_image = serializers.ImageField(read_only=True)
+
+    class Meta:
+        model = ResearcherProfile
+        fields = ['id', 'username', 'profile_image', 'details', 'university']

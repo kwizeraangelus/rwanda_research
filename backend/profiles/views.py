@@ -73,3 +73,15 @@ def submit_contact(request):
     except Exception as e:
         logger.error(f"Email send failed: {e}")
         return Response({"error": "Failed to send message. Please try again later."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
+from rest_framework import generics
+from .models import ResearcherProfile
+from .serializers import ResearcherProfileSerializer
+
+class ResearcherListView(generics.ListAPIView):
+    queryset = ResearcherProfile.objects.filter(profile_complete=True)
+    serializer_class = ResearcherProfileSerializer
+    permission_classes = [AllowAny]

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from innovations.models import Upload
-
+from search.models import Innovation
 from events.models import Event
 from django.contrib.auth import get_user_model
 
@@ -37,7 +37,7 @@ class AdminUploadSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
       class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'date_joined']
+        fields = ['id', 'username', 'email', 'date_joined','phone_number']
 
 class EventSerializer(serializers.ModelSerializer):
     class Meta:
@@ -75,3 +75,64 @@ class AdminUserSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
         return user
+    
+
+
+
+
+
+
+
+class InnovationSerializer(serializers.ModelSerializer):
+    innovator_username = serializers.CharField(source='innovator.username', read_only=True)
+    photo = serializers.ImageField(required=False, allow_null=True)
+
+    class Meta:
+        model = Innovation
+        fields = [
+            'id', 'name', 'description', 'photo', 'status',
+            'sponsorship_needed', 'created_at', 'innovator', 'innovator_username'
+        ]
+        read_only_fields = ['innovator', 'created_at', 'status']
+
+
+
+
+
+
+
+
+
+
+
+
+User = get_user_model()
+
+class InnovationAdminSerializer(serializers.ModelSerializer):
+    innovator_name = serializers.CharField(source='innovator.username', read_only=True)
+    photo_url = serializers.SerializerMethodField()
+    sponsorship_display = serializers.CharField(source='get_sponsorship_needed_display', read_only=True)
+
+    class Meta:
+        model = Innovation
+        fields = [
+            'id',
+            'name',
+            'description',
+            'photo_url',
+            'status',
+            'sponsorship_needed',
+            'sponsorship_display',
+            'innovator',
+            'innovator_name',
+            'created_at'
+        ]
+        read_only_fields = ['innovator', 'status', 'created_at']
+
+    def get_photo_url(self, obj):
+        if obj.photo:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.photo.url)
+            return f"/media/{obj.photo}"
+        return None

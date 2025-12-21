@@ -12,19 +12,21 @@ class ResearcherProfile(models.Model):
     )
 
     profile_image = models.ImageField(upload_to='profiles/', blank=True, null=True)
-    national_id = models.CharField(max_length=50, blank=True)
+
     age = models.PositiveIntegerField(blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True)
-    degree = models.CharField(max_length=100, blank=True)
+    location = models.CharField(max_length=100, blank=True)
 
     university = models.CharField(max_length=255, blank=True)
+
+    details = models.CharField(max_length=255, blank=True)
 
     profile_complete = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         required = [
-            self.user.username, self.user.email, self.phone, self.degree,
-            self.age, self.national_id,
+            self.user.username, self.user.email, self.phone,
+            self.age, self.location,self.details
         ]
         if self.university:
             required.append(self.university)

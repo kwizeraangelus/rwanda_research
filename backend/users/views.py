@@ -20,6 +20,8 @@ class RegisterView(APIView):
                 username=serializer.validated_data['username'],
                 email=serializer.validated_data['email'],
                 password=request.data.get('password'),  # Raw password → hashed
+                first_name=serializer.validated_data.get('first_name', ''),   # ← Added
+                last_name=serializer.validated_data.get('last_name', ''),
                 phone_number=serializer.validated_data.get('phone_number'),
                 user_category=serializer.validated_data.get('user_category'),
                 university_name=serializer.validated_data.get('university_name') if serializer.validated_data.get('user_category') == 'university' else None

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CustomUser, USER_CATEGORIES  # ← Import both
+from .models import CustomUser, USER_CATEGORIES 
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -9,6 +9,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'password': {'write_only': True},
             'email': {'required': True},
+            'first_name': {'required': True},
+            'last_name': {'required': True},
         }
 
     def validate_user_category(self, value):
