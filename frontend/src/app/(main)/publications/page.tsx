@@ -96,10 +96,10 @@ const PublicationCard: React.FC<Publication> = ({
 
   return (
     <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 cursor-pointer flex flex-col h-full">
-  {/* Header badge */}
-  <div className="h-10 bg-gradient-to-br from-blue-50 to-indigo-50 relative overflow-hidden">
-    {degree_type && (
-      <div className="absolute top-3 right-3">
+      {/* Header badge */}
+     <div className="h-10 bg-gradient-to-br from-blue-50 to-indigo-50 relative overflow-hidden">
+        {degree_type && (
+       <div className="absolute top-3 right-3">
         <span
           className={`px-5 py-2 rounded-full text-xs font-bold text-white shadow-lg uppercase tracking-wider ${
             degree_type === 'thesis' ? 'bg-blue-600' : 'bg-purple-600'
@@ -125,7 +125,7 @@ const PublicationCard: React.FC<Publication> = ({
           onClick={handleUniversityClick}
           className="font-semibold text-green-700 hover:underline text-left p-0 bg-transparent border-none cursor-pointer"
         >
-          {university}
+          <span className="text-gray-500 font-medium">University: </span>{university}
         </button>
       )}
       <p className="text-gray-700">
@@ -155,7 +155,7 @@ const PublicationCard: React.FC<Publication> = ({
           e.stopPropagation();
           router.push(`/books/${id}`);
         }}
-        className="inline-flex items-center px-6 py-3 bg-[#FFD700] text-black font-bold rounded-full hover:bg-yellow-400 transition-all shadow-md hover:shadow-lg transform hover:scale-105"
+        className="inline-flex items-center px-6 py-3 bg-gradient-to-br from-blue-50 to-indigo-70 text-black font-bold rounded-full hover:bg-yellow-400 transition-all shadow-md hover:shadow-lg transform hover:scale-105"
       >
         Abstract
         <svg

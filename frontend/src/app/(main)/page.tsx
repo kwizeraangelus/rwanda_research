@@ -123,11 +123,14 @@ export default function HomePage() {
     <>
       {/* 1. HERO SECTION */}
       <header
-        className="h-screen bg-cover bg-center flex items-center justify-center text-center relative"
-        style={{
-          backgroundImage: `linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.6)), url('/home.jpg')`,
-        }}
-      >
+  className="
+    relative isolate min-h-screen w-full 
+    bg-cover bg-center bg-no-repeat flex items-center justify-center text-center
+  "
+  style={{
+    backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.65)), url('/home.jpg')`,
+  }}
+>
         <div className="px-8 max-w-6xl mx-auto">
           <h1 className="text-[45px] lg:text-[70px] leading-tight mb-10 font-bold text-white">
             Discover a New Era of Books,<br />

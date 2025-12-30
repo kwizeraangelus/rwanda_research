@@ -41,7 +41,7 @@ export default function LoginPage() {
   };
 
   // --- Styling Constants (for register link and input focus) ---
-  const SOFT_SKY_BLUE = '#e0f7fa'; 
+  const SOFT_SKY_BLUE = '#182224ff'; 
   const STRONG_YELLOW = '#FFD700'; 
   // STRONG_YELLOW_HOVER = '#FBC02D'; 
 

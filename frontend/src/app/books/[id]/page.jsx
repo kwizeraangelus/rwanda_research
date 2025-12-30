@@ -1,4 +1,3 @@
-// app/books/[id]/page.jsx
 'use client';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
@@ -13,7 +12,11 @@ import {
   User,
   Calendar,
   Award,
-  ChevronLeft
+  ChevronLeft,
+  FileText,
+  Book,
+  GraduationCap,
+  Newspaper
 } from 'lucide-react';
 
 export default function BookDetailPage() {
@@ -31,6 +34,41 @@ export default function BookDetailPage() {
     if (status === 'approved') return 'bg-green-500';
     if (status === 'pending') return 'bg-yellow-500';
     return 'bg-gray-500';
+  };
+
+  // Get icon based on publication type
+  const getPublicationIcon = (type) => {
+    switch(type?.toLowerCase()) {
+      case 'journal':
+        return <Newspaper className="w-5 h-5" />;
+      case 'phd':
+      case 'thesis':
+      case 'dissertation':
+        return <GraduationCap className="w-5 h-5" />;
+      case 'book':
+      case 'book chapter':
+        return <Book className="w-5 h-5" />;
+      default:
+        return <FileText className="w-5 h-5" />;
+    }
+  };
+
+  // Format publication type for display
+  const formatPublicationType = (type) => {
+    switch(type?.toLowerCase()) {
+      case 'journal':
+        return 'Journal Article';
+      case 'phd':
+        return 'Ph.D. Thesis';
+      case 'thesis':
+        return 'Master Thesis';
+      case 'book':
+        return 'Book';
+      case 'book chapter':
+        return 'Book Chapter';
+      default:
+        return type || 'Research Publication';
+    }
   };
 
   // Load like status from localStorage on mount
@@ -314,57 +352,132 @@ export default function BookDetailPage() {
                 className="inline-flex items-center px-8 py-4 bg-green-700 text-white font-bold text-lg rounded-lg shadow-lg hover:bg-green-800 transition transform hover:scale-105"
               >
                 <Download className="w-6 h-6 mr-3" />
-                 Open PDF
+                Open PDF
               </a>
             )}
-            {book?.external_link && (
-              <a
-                href={book.external_link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center px-8 py-4 bg-purple-600 text-white font-bold text-lg rounded-lg shadow-lg hover:bg-purple-700 transition transform hover:scale-105"
-              >
-                <ExternalLink className="w-6 h-6 mr-3" />
-                External Source
-              </a>
-            )}
-          </div>
-        </div>
+           {book?.external_link && (
+      <a
+        href={book.external_link}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center px-8 py-4 bg-purple-600 text-white font-bold text-lg rounded-lg shadow-lg hover:bg-purple-700 transition transform hover:scale-105"
+      >
+        <ExternalLink className="w-6 h-6 mr-3" />
+        External Source
+      </a>
+    )}
+  </div>
+</div>
 
-        {/* MORE FROM THIS RESEARCHER — DIRECT NAVIGATION */}
+        {/* MORE FROM THIS RESEARCHER - Academic Format */}
         {authorUploads.length > 0 && (
-          <div className="bg-gray-50 p-8">
+          <div className="bg-gray-50 p-8 border-t">
             <h3 className="text-3xl font-bold text-gray-800 text-center mb-10">
-              More from this Researcher
+              More Publications by this Researcher
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="max-w-4xl mx-auto space-y-6">
               {authorUploads.map(upload => (
                 <div
                   key={upload.id}
                   onClick={() => router.push(`/books/${upload.id}`)}
-                  className="cursor-pointer group transform transition-all hover:scale-105"
+                  className="cursor-pointer bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow p-6 border border-gray-200 hover:border-blue-300 group"
                 >
-                  <div className="rounded-2xl overflow-hidden shadow-xl border-2 border-blue-200 bg-blue-50">
-                    <div className="h-64 bg-white flex flex-col items-center justify-center border-b-2 border-gray-100 relative">
-                      {upload.cover_image ? (
-                        <Image src={upload.cover_image} alt={upload.title} fill className="object-cover" unoptimized />
-                      ) : (
-                        <>
-                          <span className="text-9xl text-gray-300">Thesis</span>
-                          <p className="text-2xl font-medium text-gray-500 mt-4 tracking-wider">THESIS</p>
-                        </>
+                  <div className="flex items-start gap-4">
+                    {/* Publication Type Badge */}
+                    <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 group-hover:bg-blue-200 transition">
+                      {getPublicationIcon(upload.publication_type)}
+                    </div>
+                    
+                    <div className="flex-1">
+                      {/* Publication Type Label */}
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-sm font-semibold text-blue-700 uppercase tracking-wide">
+                          {formatPublicationType(upload.publication_type)}
+                        </span>
+                        {upload.status_display && (
+                          <span className={`text-xs px-2 py-1 rounded-full ${getStatusBadge(upload.status)} text-white`}>
+                            {upload.status_display}
+                          </span>
+                        )}
+                      </div>
+                      
+                      {/* Title */}
+                      <h4 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-700 transition">
+                        {upload.title}
+                      </h4>
+                      
+                      {/* Authors */}
+                      <p className="text-gray-700 mb-3 italic">
+                        {upload.authors || 'Unknown Authors'}
+                      </p>
+                      
+                      {/* Publication Details */}
+                      <div className="text-gray-600 space-y-1">
+                        {upload.journal_name && (
+                          <p className="font-medium">
+                            <span className="text-blue-600">In:</span> {upload.journal_name}
+                            {upload.year && <span>, {upload.year}</span>}
+                          </p>
+                        )}
+                        
+                        {upload.publisher && !upload.journal_name && (
+                          <p className="font-medium">
+                            <span className="text-blue-600">Published by:</span> {upload.publisher}
+                            {upload.year && <span>, {upload.year}</span>}
+                          </p>
+                        )}
+                        
+                        {upload.institution && !upload.publisher && !upload.journal_name && (
+                          <p className="font-medium">
+                            <span className="text-blue-600">Institution:</span> {upload.institution}
+                            {upload.year && <span>, {upload.year}</span>}
+                          </p>
+                        )}
+                      </div>
+                      
+                      {/* Abstract Preview */}
+                      {upload.description && (
+                        <div className="mt-4">
+                          <div className="flex items-center gap-2 mb-2">
+                           
+                          </div>
+                          <p className="text-gray-600 text-sm line-clamp-2">
+                            {upload.description}
+                          </p>
+                        </div>
+                      )}
+                      
+                      {/* Action Buttons */}
+                      <div className="mt-6 flex items-center gap-4">
+                        {upload.description && (
+                          <button className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 font-medium">
+                            <FileText size={16} />
+                            Abstract
+                          </button>
+                        )}
+                        
+                        {upload.file_url && (
+                          <button className="flex items-center gap-1 text-sm text-green-600 hover:text-green-800 font-medium">
+                            <Download size={16} />
+                            PDF
+                          </button>
+                        )}
+                        
+                        <button className="flex items-center gap-1 text-sm text-purple-600 hover:text-purple-800 font-medium ml-auto">
+                          <ExternalLink size={16} />
+                          View Details
+                        </button>
+                      </div>
+                      
+                      {/* Citations (if available) */}
+                      {upload.citations_count > 0 && (
+                        <div className="mt-4 pt-4 border-t border-gray-100">
+                          <span className="text-sm text-gray-500">
+                            Citations: <span className="font-bold text-gray-700">{upload.citations_count}</span>
+                          </span>
+                        </div>
                       )}
                     </div>
-                    <div className={`absolute top-4 right-4 px-5 py-2 rounded-full text-sm font-bold text-white shadow-lg ${getStatusBadge(upload.status)}`}>
-                      {upload.status_display || upload.status.toUpperCase()}
-                    </div>
-                  </div>
-                  <div className="mt-6 text-center">
-                    <h4 className="font-bold text-gray-800 text-lg line-clamp-2 px-2">{upload.title}</h4>
-                    <p className="text-gray-600 mt-1">{upload.year}</p>
-                    {upload.supervisor_name && (
-                      <p className="text-sm font-medium text-blue-700 mt-2">Supervisor: {upload.supervisor_name}</p>
-                    )}
                   </div>
                 </div>
               ))}
@@ -372,11 +485,16 @@ export default function BookDetailPage() {
           </div>
         )}
 
-        {/* NO OTHER BOOKS */}
+        {/* NO OTHER PUBLICATIONS */}
         {authorUploads.length === 0 && !loading && !error && (
-          <div className="bg-gray-50 p-8">
+          <div className="bg-gray-50 p-8 border-t">
             <h3 className="text-3xl font-bold text-gray-800 text-center mb-10">More from this Researcher</h3>
-            <p className="text-center text-gray-500 py-10 text-lg">No other approved research found by this author.</p>
+            <div className="text-center text-gray-500 py-10">
+              <div className="w-24 h-24 mx-auto mb-4 bg-gray-200 rounded-full flex items-center justify-center">
+                <Book className="w-12 h-12 text-gray-400" />
+              </div>
+              <p className="text-lg">No other research publications found by this author.</p>
+            </div>
           </div>
         )}
 

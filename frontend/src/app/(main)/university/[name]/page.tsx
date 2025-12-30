@@ -135,6 +135,10 @@ export default function UniversityPage() {
       .join(' ');
   };
 
+
+
+
+
   const getDegreeColor = (degreeType?: string) => {
     return degreeType === 'thesis'
       ? 'bg-blue-600'
