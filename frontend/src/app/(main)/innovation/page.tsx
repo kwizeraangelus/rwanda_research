@@ -36,7 +36,7 @@ const InnovationCard: React.FC<Innovation> = ({
 
   return (
     <div 
-      onClick={() => window.location.href = `/innovation/${id}`}
+      onClick={() => window.location.href = `${id}`}
       className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 cursor-pointer"
     >
       <div className="h-56 bg-gradient-to-br from-blue-50 to-indigo-50 relative overflow-hidden">

@@ -12,6 +12,7 @@ urlpatterns = [
     path('signup/', views.register_user),
     path('login/', views.login_view),
     path('profile/', views.profile_view),
-
-
+    path('change-password/', views.ChangePasswordAPIView.as_view(), name='api-change-password'),
 ]
+
+

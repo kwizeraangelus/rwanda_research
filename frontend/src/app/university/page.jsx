@@ -18,11 +18,11 @@ export default function ResearcherDashboard() {
   const [showUploadForm, setShowUploadForm] = useState(false);
 
   // Step-by-step upload states
-  const [degreeType, setDegreeType] = useState(''); // 'thesis' or 'dissertation'
+  const [degreeType, setDegreeType] = useState('');
   const [selectedField, setSelectedField] = useState('');
   const [showOtherField, setShowOtherField] = useState(false);
 
-  // Profile edit
+  // Profile edit modal
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [profileForm, setProfileForm] = useState({
     profile_image: null,
@@ -33,6 +33,16 @@ export default function ResearcherDashboard() {
     details: ''
   });
   const [imagePreview, setImagePreview] = useState(null);
+
+  // Change password modal
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
+    old_password: '',
+    new_password1: '',
+    new_password2: ''
+  });
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
 
   // Form data for submission
   const [formData, setFormData] = useState({
@@ -57,16 +67,29 @@ export default function ResearcherDashboard() {
         fetch('http://localhost:8000/api/me/', { credentials: 'include' }),
         fetch('http://localhost:8000/api/my-uploads/', { credentials: 'include' })
       ]);
-      if (!userRes.ok) throw new Error();
+      if (!userRes.ok) throw new Error('Failed to fetch user data');
       const userData = await userRes.json();
       const uploadsData = await uploadsRes.json();
       setUser(userData);
       setUploads(uploadsData);
-    } catch {
+    } catch (err) {
+      console.error(err);
       router.push('/login');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch('http://localhost:8000/accounts/logout/', {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (err) {
+      console.error('Logout error:', err);
+    }
+    router.push('/login');
   };
 
   const handleFieldChange = (value) => {
@@ -96,6 +119,8 @@ export default function ResearcherDashboard() {
         ...prev,
         submission_type: `${degreeType}-${cleanField}`
       }));
+    } else if (!degreeType || !selectedField) {
+      setFormData(prev => ({ ...prev, submission_type: '' }));
     }
   }, [degreeType, selectedField, formData.other_field]);
 
@@ -132,10 +157,10 @@ export default function ResearcherDashboard() {
         alert('Research submitted successfully!');
       } else {
         const err = await res.json();
-        alert('Error: ' + JSON.stringify(err));
+        alert('Error: ' + (err.detail || JSON.stringify(err)));
       }
     } catch {
-      alert('Network error');
+      alert('Network error - please try again');
     } finally {
       setUploading(false);
     }
@@ -171,19 +196,82 @@ export default function ResearcherDashboard() {
       if (v !== '' && v !== null) data.append(k, v);
     });
 
-    const res = await fetch('http://localhost:8000/api/update/', {
-      method: 'PATCH',
-      credentials: 'include',
-      body: data,
-    });
+    try {
+      const res = await fetch('http://localhost:8000/api/update/', {
+        method: 'PATCH',
+        credentials: 'include',
+        body: data,
+      });
 
-    if (res.ok) {
-      const updated = await res.json();
-      setUser(updated);
-      setShowEditProfile(false);
-      alert('Profile updated successfully!');
-    } else {
-      alert('Failed to update profile');
+      if (res.ok) {
+        const updated = await res.json();
+        setUser(updated);
+        setShowEditProfile(false);
+        alert('Profile updated successfully!');
+      } else {
+        alert('Failed to update profile');
+      }
+    } catch (err) {
+      alert('Network error');
+    }
+  };
+
+  // Password change handlers
+  const openChangePassword = () => {
+    setPasswordForm({ old_password: '', new_password1: '', new_password2: '' });
+    setPasswordError('');
+    setPasswordSuccess('');
+    setShowChangePassword(true);
+  };
+
+  const handlePasswordInput = (e) => {
+    const { name, value } = e.target;
+    setPasswordForm(prev => ({ ...prev, [name]: value }));
+    setPasswordError('');
+  };
+
+  const submitPasswordChange = async (e) => {
+    e.preventDefault();
+    setPasswordError('');
+    setPasswordSuccess('');
+
+    if (passwordForm.new_password1 !== passwordForm.new_password2) {
+      setPasswordError("New passwords don't match");
+      return;
+    }
+
+    if (passwordForm.new_password1.length < 8) {
+      setPasswordError("New password must be at least 8 characters long");
+      return;
+    }
+
+    try {
+      const res = await fetch('http://localhost:8000/api/change-password/', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(passwordForm),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setPasswordSuccess('Password changed successfully!');
+        setTimeout(() => {
+          setShowChangePassword(false);
+          setPasswordForm({ old_password: '', new_password1: '', new_password2: '' });
+        }, 1800);
+      } else {
+        setPasswordError(
+          data.old_password?.[0] ||
+          data.new_password1?.[0] ||
+          data.new_password2?.[0] ||
+          data.detail ||
+          'Failed to update password'
+        );
+      }
+    } catch {
+      setPasswordError('Network error - please try again');
     }
   };
 
@@ -198,29 +286,40 @@ export default function ResearcherDashboard() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-2xl font-semibold text-gray-600">Loading...</div>
+        <div className="text-2xl font-semibold text-gray-600">Loading dashboard...</div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
+      {/* Header with Logout */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full shadow-lg"></div>
             <h1 className="text-2xl font-bold text-gray-800">Research Portal</h1>
           </div>
-          <div className="bg-blue-50 text-blue-700 px-5 py-2 rounded-full font-medium">
-            {user?.user?.username}
+          <div className="flex items-center gap-6">
+            <div className="bg-blue-50 text-blue-700 px-5 py-2 rounded-full font-medium">
+              {user?.user?.username || 'User'}
+            </div>
+            <button
+              onClick={handleLogout}
+              className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow transition flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              Logout
+            </button>
           </div>
         </div>
       </header>
 
       {/* Main Layout */}
       <div className="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 lg:grid-cols-3 gap-10">
-        {/* Main Content - Scrollable */}
+        {/* Main Content */}
         <div className="lg:col-span-2 space-y-10">
           {/* Guidelines */}
           <div className="bg-amber-50 border border-amber-200 rounded-2xl p-8">
@@ -243,7 +342,7 @@ export default function ResearcherDashboard() {
 
           {/* Smart Upload Form */}
           {showUploadForm && (
-            <div className="bg-white rounded-2xl shadow-2xl border-2 border-blue-100 p-8 max-h-[70vh] overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-2xl border-2 border-blue-100 p-8">
               <h3 className="text-2xl font-bold text-gray-800 text-center mb-10">Submit Your Research</h3>
 
               {/* Step 1: Degree Type */}
@@ -286,21 +385,22 @@ export default function ResearcherDashboard() {
               )}
 
               {/* Step 3: Custom Field */}
-              {showOtherField && !formData.other_field && (
+              {showOtherField && !formData.other_field.trim() && (
                 <div className="max-w-md mx-auto mt-8">
                   <input
                     type="text"
                     placeholder="Enter your field (e.g., Psychology)"
+                    value={formData.other_field}
                     className="w-full p-5 text-lg border-2 border-blue-300 rounded-xl focus:border-blue-600 outline-none"
                     onChange={(e) => setFormData(prev => ({ ...prev, other_field: e.target.value }))}
                   />
                 </div>
               )}
 
-              {/* Final Form - SCROLLABLE CONTAINER */}
+              {/* Final Form */}
               {formData.submission_type && (
-                <div className="mt-10 space-y-6 max-h-[50vh] overflow-y-auto pr-2 -mr-2">
-                  <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6 text-center sticky top-0 bg-white z-10">
+                <form onSubmit={handleSubmit} className="mt-10 space-y-6">
+                  <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6 text-center sticky top-0 z-10 -mx-8 px-8">
                     <p className="text-sm text-blue-600">Selected Category</p>
                     <p className="text-2xl font-bold text-blue-900">
                       {degreeType.charAt(0).toUpperCase() + degreeType.slice(1)} -{' '}
@@ -308,23 +408,27 @@ export default function ResearcherDashboard() {
                     </p>
                   </div>
 
-                  <input name="university_name" placeholder="University Name *" onChange={handleInputChange} required className="w-full p-4 border border-gray-300 rounded-xl" />
-                  <input name="title" placeholder="Title *" onChange={handleInputChange} required className="w-full p-4 border border-gray-300 rounded-xl" />
-                  <input name="authors" placeholder="Authors *" onChange={handleInputChange} required className="w-full p-4 border border-gray-300 rounded-xl" />
-                  <input name="supervisor_name" placeholder="Supervisor Name *" onChange={handleInputChange} required className="w-full p-4 border border-gray-300 rounded-xl bg-blue-50" />
-                  <input name="year" type="number" placeholder="Year *" onChange={handleInputChange} required className="w-full p-4 border border-gray-300 rounded-xl" />
-                  <textarea name="description" placeholder="Brief description / Abstract *" rows={4} onChange={handleInputChange} required className="w-full p-4 border border-gray-300 rounded-xl resize-none" />
+                  <input name="university_name" placeholder="University Name *" value={formData.university_name} onChange={handleInputChange} required className="w-full p-4 border border-gray-300 rounded-xl" />
+                  <input name="title" placeholder="Title *" value={formData.title} onChange={handleInputChange} required className="w-full p-4 border border-gray-300 rounded-xl" />
+                  <input name="authors" placeholder="Authors *" value={formData.authors} onChange={handleInputChange} required className="w-full p-4 border border-gray-300 rounded-xl" />
+                  <input name="supervisor_name" placeholder="Supervisor Name *" value={formData.supervisor_name} onChange={handleInputChange} required className="w-full p-4 border border-gray-300 rounded-xl bg-blue-50" />
+                  <input name="year" type="number" placeholder="Year *" value={formData.year} onChange={handleInputChange} required className="w-full p-4 border border-gray-300 rounded-xl" />
+                  <textarea name="description" placeholder="Brief description / Abstract *" rows={4} value={formData.description} onChange={handleInputChange} required className="w-full p-4 border border-gray-300 rounded-xl resize-none" />
                   <input type="file" name="file" accept=".pdf,.doc,.docx" onChange={handleInputChange} required className="w-full p-4 border-2 border-dashed border-blue-300 rounded-xl bg-blue-50 file:bg-blue-600 file:text-white file:py-3 file:px-8 file:rounded-lg" />
 
-                  <button type="submit" disabled={uploading} className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-5 rounded-xl text-lg shadow-lg disabled:opacity-70">
+                  <button
+                    type="submit"
+                    disabled={uploading}
+                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-5 rounded-xl text-lg shadow-lg disabled:opacity-70 disabled:cursor-not-allowed transition"
+                  >
                     {uploading ? 'Submitting...' : 'Submit Research'}
                   </button>
-                </div>
+                </form>
               )}
             </div>
           )}
 
-          {/* My Uploads - With Feedback Support */}
+          {/* My Uploads */}
           <div className="bg-white rounded-2xl shadow-xl p-8">
             <h3 className="text-3xl font-bold text-gray-800 text-center mb-10">My Uploads</h3>
             {uploads.length === 0 ? (
@@ -355,7 +459,6 @@ export default function ResearcherDashboard() {
                       <p className="text-gray-600 mt-1">{upload.year}</p>
                       {upload.supervisor_name && <p className="text-sm text-blue-700 mt-2">Supervisor: {upload.supervisor_name}</p>}
 
-                      {/* Feedback Box */}
                       {upload.feedback && (
                         <div className={`mt-4 p-4 rounded-xl text-sm font-medium border-l-4 ${upload.status === 'rejected' ? 'bg-red-50 border-red-500 text-red-800' : 'bg-amber-50 border-amber-500 text-amber-800'}`}>
                           <p className="font-bold">{upload.status === 'rejected' ? 'Reason:' : 'Note:'}</p>
@@ -394,7 +497,7 @@ export default function ResearcherDashboard() {
             <div><strong>Email:</strong> {user?.user?.email}</div>
             {user?.age && <div><strong>Age:</strong> {user.age}</div>}
             {user?.phone && <div><strong>Phone:</strong> {user.phone}</div>}
-            {user?.location && <div><strong>Location:</strong> {user.location}</div>}
+            {user?.location && <div><strong>campus:</strong> {user.location}</div>}
             {user?.university && <div><strong>University:</strong> {user.university}</div>}
             {user?.details && (
               <div>
@@ -406,9 +509,16 @@ export default function ResearcherDashboard() {
 
           <button
             onClick={openEditProfile}
-            className="mt-8 w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg transition"
+            className="mt-6 w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg transition"
           >
             Edit Profile
+          </button>
+
+          <button
+            onClick={openChangePassword}
+            className="mt-4 w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg transition"
+          >
+            Change Password
           </button>
         </div>
       </div>
@@ -433,7 +543,7 @@ export default function ResearcherDashboard() {
                     type="file"
                     accept="image/*"
                     onChange={(e) => {
-                      const file = e.target.files[0];
+                      const file = e.target.files?.[0];
                       if (file) {
                         setProfileForm(prev => ({ ...prev, profile_image: file }));
                         setImagePreview(URL.createObjectURL(file));
@@ -444,10 +554,30 @@ export default function ResearcherDashboard() {
                 </label>
               </div>
 
-              <input type="number" placeholder="Age" value={profileForm.age} onChange={e => setProfileForm(p => ({ ...p, age: e.target.value }))} className="w-full p-4 border border-gray-300 rounded-xl" />
-              <input type="tel" placeholder="Phone" value={profileForm.phone} onChange={e => setProfileForm(p => ({ ...p, phone: e.target.value }))} className="w-full p-4 border border-gray-300 rounded-xl" />
-              <input type="text" placeholder="Location" value={profileForm.location} onChange={e => setProfileForm(p => ({ ...p, location: e.target.value }))} className="w-full p-4 border border-gray-300 rounded-xl" required />
-              <input type="text" placeholder="University" value={profileForm.university} onChange={e => setProfileForm(p => ({ ...p, university: e.target.value }))} className="w-full p-4 border border-gray-300 rounded-xl" />
+              <input 
+                type="tel" 
+                placeholder="Phone" 
+                value={profileForm.phone} 
+                onChange={e => setProfileForm(p => ({ ...p, phone: e.target.value }))} 
+                className="w-full p-4 border border-gray-300 rounded-xl" 
+              />
+            
+              <input 
+                type="text" 
+                placeholder="University" 
+                value={profileForm.university} 
+                onChange={e => setProfileForm(p => ({ ...p, university: e.target.value }))} 
+                className="w-full p-4 border border-gray-300 rounded-xl" 
+              />
+              
+              <input 
+                type="text" 
+                placeholder="campus/college" 
+                value={profileForm.location} 
+                onChange={e => setProfileForm(p => ({ ...p, location: e.target.value }))} 
+                className="w-full p-4 border border-gray-300 rounded-xl" 
+              />
+              
               <textarea
                 placeholder="Short bio (optional)"
                 rows={4}
@@ -459,6 +589,81 @@ export default function ResearcherDashboard() {
               <div className="flex gap-4 pt-4">
                 <button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl">Save Changes</button>
                 <button type="button" onClick={() => setShowEditProfile(false)} className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-4 rounded-xl">Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Change Password Modal */}
+      {showChangePassword && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8">
+            <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">Change Password</h3>
+
+            {passwordSuccess && (
+              <div className="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded-r-xl text-center">
+                {passwordSuccess}
+              </div>
+            )}
+
+            {passwordError && (
+              <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-r-xl">
+                {passwordError}
+              </div>
+            )}
+
+            <form onSubmit={submitPasswordChange} className="space-y-6">
+              <div>
+                <label className="block text-gray-700 font-medium mb-2">Current Password</label>
+                <input
+                  type="password"
+                  name="old_password"
+                  value={passwordForm.old_password}
+                  onChange={handlePasswordInput}
+                  required
+                  className="w-full p-4 border border-gray-300 rounded-xl focus:border-purple-600 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-700 font-medium mb-2">New Password</label>
+                <input
+                  type="password"
+                  name="new_password1"
+                  value={passwordForm.new_password1}
+                  onChange={handlePasswordInput}
+                  required
+                  className="w-full p-4 border border-gray-300 rounded-xl focus:border-purple-600 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-700 font-medium mb-2">Confirm New Password</label>
+                <input
+                  type="password"
+                  name="new_password2"
+                  value={passwordForm.new_password2}
+                  onChange={handlePasswordInput}
+                  required
+                  className="w-full p-4 border border-gray-300 rounded-xl focus:border-purple-600 outline-none"
+                />
+              </div>
+
+              <div className="flex gap-4 pt-6">
+                <button 
+                  type="submit" 
+                  className="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 rounded-xl transition"
+                >
+                  Update Password
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => setShowChangePassword(false)} 
+                  className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-4 rounded-xl transition"
+                >
+                  Cancel
+                </button>
               </div>
             </form>
           </div>
