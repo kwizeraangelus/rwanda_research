@@ -29,6 +29,7 @@ urlpatterns = [
     path('api/', include('admin_panel.urls')),
     path('api/', include('events.urls')),
     path('api/', include('search.urls')),
+    path('api/', include('universities.urls')),
     
 
     

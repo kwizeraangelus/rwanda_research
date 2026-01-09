@@ -137,3 +137,34 @@ class InnovationAdminSerializer(serializers.ModelSerializer):
                 return request.build_absolute_uri(obj.photo.url)
             return f"/media/{obj.photo}"
         return None
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+from rest_framework import serializers
+from universities.models import Publication
+
+class PublicationAdminListSerializer(serializers.ModelSerializer):
+    research_profile_username = serializers.CharField(
+        source='research_profile.user.username', read_only=True
+    )
+    get_type_display = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = Publication
+        fields = [
+            'id', 'title', 'type', 'get_type_display', 'authors', 'info',
+            'doi_url', 'abstract', 'pdf', 'research_profile',
+            'research_profile_username', 'created_at', 'status_changed_at',
+        ]

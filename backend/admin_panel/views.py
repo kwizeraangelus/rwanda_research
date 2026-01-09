@@ -463,3 +463,73 @@ def delete_innovation(request, id):  # ✅ id MUST be here
         {"message": "Innovation deleted successfully"},
         status=status.HTTP_204_NO_CONTENT
     )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework.permissions import IsAdminUser
+from django.shortcuts import get_object_or_404
+from universities.models import Publication
+from .serializers import PublicationAdminListSerializer
+from django.utils import timezone
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def pending_publications(request):
+    pubs = Publication.objects.filter(status='pending').select_related('research_profile__user')
+    serializer = PublicationAdminListSerializer(pubs, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['POST'])
+@permission_classes([IsAdminUser])
+def approve_publication(request, pk):
+    pub = get_object_or_404(Publication, pk=pk)
+    if pub.status != 'pending':
+        return Response({"detail": "Not pending"}, status=400)
+    
+    pub.status = 'approved'
+    pub.save()          # triggers status_changed_at
+    return Response({"detail": "Approved"})
+
+
+@api_view(['POST'])
+@permission_classes([IsAdminUser])
+def reject_publication(request, pk):
+    pub = get_object_or_404(Publication, pk=pk)
+    if pub.status != 'pending':
+        return Response({"detail": "Not pending"}, status=400)
+    
+    feedback = request.data.get('feedback', '').strip()
+    if not feedback:
+        return Response({"feedback": "This field is required"}, status=400)
+
+    pub.status = 'rejected'
+    pub.feedback = feedback
+    pub.save()
+    return Response({"detail": "Rejected"})
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAdminUser])
+def delete_publication(request, pk):
+    pub = get_object_or_404(Publication, pk=pk)
+    pub.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)

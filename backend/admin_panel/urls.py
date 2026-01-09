@@ -24,6 +24,26 @@ path('admin/innovations/<int:id>/update/', views.update_innovation),
 path('admin/innovations/<int:id>/delete/', views.delete_innovation),
 
 
+
+
+
+
+
+
+
+
+path('admin/publications/pending/', views.pending_publications, name='pending-publications'),
+    path('admin/publications/<int:pk>/approve/', views.approve_publication, name='approve-publication'),
+    path('admin/publications/<int:pk>/reject/',  views.reject_publication,  name='reject-publication'),
+    path('admin/publications/<int:pk>/delete/',         views.delete_publication,  name='delete-publication'),
+
+
+
+
+ 
+
+
+
 path('admin/', include(router.urls)),
 
 

@@ -36,7 +36,7 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     ".next/dev/types/**/*.ts"
-, "src/app/organizer/page.jsx", "src/app/innovator/page.jsx", "src/app/innovation/page.tsx", "src/app/innovation/page.tsx", "src/app/innovation/[id]/page.jsx"  ],
+, "src/app/organizer/page.jsx", "src/app/innovator/page.jsx", "src/app/innovation/page.tsx", "src/app/innovation/page.tsx", "src/app/innovation/[id]/page.jsx", "src/app/admin-dashboard/pending-researches/page.jsx", "src/app/admin-dashboard/pending-researches/page.jsx"  ],
   "exclude": [
     "node_modules"
   ]

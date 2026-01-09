@@ -12,7 +12,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [feedbackInput, setFeedbackInput] = useState('');
   const [selectedId, setSelectedId] = useState(null);
-  
+
   // User form states
   const [showUserForm, setShowUserForm] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
@@ -117,11 +117,11 @@ export default function AdminDashboard() {
       if (filters.university) queryParams.append('university', filters.university);
       if (filters.author) queryParams.append('author', filters.author);
       if (filters.category) queryParams.append('category', filters.category);
-      
-      const res = await fetch(`http://localhost:8000/api/admin/approved-books/?${queryParams}`, { 
-        credentials: 'include' 
+
+      const res = await fetch(`http://localhost:8000/api/admin/approved-books/?${queryParams}`, {
+        credentials: 'include'
       });
-      
+
       if (res.ok) {
         const json = await res.json();
         setApprovedBooks(json.books || []);
@@ -138,18 +138,18 @@ export default function AdminDashboard() {
       alert('Feedback required for rejection');
       return;
     }
-    
+
     try {
       const res = await fetch(`http://localhost:8000/api/admin/upload/${id}/update/`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          action, 
-          feedback: action === 'reject' ? feedbackInput : '' 
+        body: JSON.stringify({
+          action,
+          feedback: action === 'reject' ? feedbackInput : ''
         }),
       });
-      
+
       if (res.ok) {
         setData(prev => ({
           ...prev,
@@ -190,8 +190,7 @@ export default function AdminDashboard() {
 
   const handleUpdateUser = async () => {
     if (!editingUser) return;
-    
-    // Basic validation
+
     if (!userForm.username.trim()) {
       alert('Username is required');
       return;
@@ -200,26 +199,23 @@ export default function AdminDashboard() {
       alert('Email is required');
       return;
     }
-    
+
     try {
-      // Prepare data for update (don't send password if empty)
       const updateData = { ...userForm };
       if (!updateData.password) {
         delete updateData.password;
         delete updateData.confirm_password;
       }
-      
+
       const res = await fetch(`http://localhost:8000/api/admin/users/${editingUser.id}/update/`, {
         method: 'PUT',
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updateData),
       });
-      
+
       const data = await res.json();
-      
+
       if (res.ok) {
         alert(data.message || 'User updated successfully!');
         setShowUserForm(false);
@@ -238,15 +234,15 @@ export default function AdminDashboard() {
     if (!confirm(`Are you sure you want to delete user "${username}"? This action cannot be undone.`)) {
       return;
     }
-    
+
     try {
       const res = await fetch(`http://localhost:8000/api/admin/users/${userId}/delete/`, {
         method: 'DELETE',
         credentials: 'include',
       });
-      
+
       const data = await res.json();
-      
+
       if (res.ok) {
         alert(data.message || 'User deleted successfully!');
         fetchUsers();
@@ -260,7 +256,6 @@ export default function AdminDashboard() {
   };
 
   const handleCreateUser = async () => {
-    // Validation
     if (!userForm.username.trim()) {
       alert('Username is required');
       return;
@@ -277,19 +272,17 @@ export default function AdminDashboard() {
       alert('Passwords do not match');
       return;
     }
-    
+
     try {
       const res = await fetch('http://localhost:8000/api/admin/users/create/', {
         method: 'POST',
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userForm),
       });
-      
+
       const data = await res.json();
-      
+
       if (res.ok) {
         alert(data.message || 'User created successfully!');
         setShowUserForm(false);
@@ -322,7 +315,7 @@ export default function AdminDashboard() {
       alert('Please fill in all required fields');
       return;
     }
-    
+
     try {
       const formData = new FormData();
       formData.append('title', eventForm.title);
@@ -331,19 +324,19 @@ export default function AdminDashboard() {
       formData.append('location', eventForm.location);
       formData.append('icon', eventForm.icon);
       formData.append('link', eventForm.link || '');
-      
+
       if (eventForm.photo) {
         formData.append('photo', eventForm.photo);
       }
-      
+
       const res = await fetch('http://localhost:8000/api/admin/events/create/', {
         method: 'POST',
         credentials: 'include',
         body: formData,
       });
-      
+
       const data = await res.json();
-      
+
       if (res.ok) {
         alert(data.message || 'Event created successfully!');
         setShowEventForm(false);
@@ -389,7 +382,7 @@ export default function AdminDashboard() {
       alert('Please fill in all required fields');
       return;
     }
-    
+
     try {
       const formData = new FormData();
       formData.append('title', eventForm.title);
@@ -398,19 +391,19 @@ export default function AdminDashboard() {
       formData.append('location', eventForm.location);
       formData.append('icon', eventForm.icon);
       formData.append('link', eventForm.link || '');
-      
+
       if (eventForm.photo) {
         formData.append('photo', eventForm.photo);
       }
-      
+
       const res = await fetch(`http://localhost:8000/api/admin/events/${editingEvent.id}/update/`, {
         method: 'PUT',
         credentials: 'include',
         body: formData,
       });
-      
+
       const data = await res.json();
-      
+
       if (res.ok) {
         alert(data.message || 'Event updated successfully!');
         setShowEventForm(false);
@@ -440,15 +433,15 @@ export default function AdminDashboard() {
     if (!confirm(`Are you sure you want to delete "${eventTitle}"? This action cannot be undone.`)) {
       return;
     }
-    
+
     try {
       const res = await fetch(`http://localhost:8000/api/admin/events/${eventId}/delete/`, {
         method: 'DELETE',
         credentials: 'include',
       });
-      
+
       const data = await res.json();
-      
+
       if (res.ok) {
         alert(data.message || 'Event deleted successfully!');
         fetchEvents();
@@ -464,13 +457,13 @@ export default function AdminDashboard() {
   // =========== APPROVED BOOKS FUNCTIONS ===========
   const deleteBook = async (id, title) => {
     if (!confirm(`Are you sure you want to delete "${title}"? This action cannot be undone.`)) return;
-    
+
     try {
       const res = await fetch(`http://localhost:8000/api/admin/books/${id}/delete/`, {
         method: 'DELETE',
         credentials: 'include'
       });
-      
+
       if (res.ok) {
         alert('Book deleted successfully!');
         fetchApprovedBooks();
@@ -521,11 +514,14 @@ export default function AdminDashboard() {
             <div className="text-2xl md:text-4xl font-bold">{data.kpis.pending_count || 0}</div>
             <h3 className="text-sm md:text-base">Pending Books</h3>
           </div>
-          
-          
           <div className="bg-[#8c9c6f] text-white p-4 md:p-6 rounded-lg shadow text-center flex-1 min-w-[150px] md:min-w-[200px]">
             <div className="text-2xl md:text-4xl font-bold">{data.kpis.pending_innovations_count || 0}</div>
             <h3 className="text-sm md:text-base">Pending Innovations</h3>
+          </div>
+          {/* NEW: Pending Researches count box */}
+          <div className="bg-[#4a772e] text-white p-4 md:p-6 rounded-lg shadow text-center flex-1 min-w-[150px] md:min-w-[200px]">
+            <div className="text-2xl md:text-4xl font-bold">{data.kpis.pending_researches_count || 0}</div>
+            <h3 className="text-sm md:text-base">Pending Researches</h3>
           </div>
         </div>
       )}
@@ -547,7 +543,7 @@ export default function AdminDashboard() {
                   {data.pending?.length || 0} pending items
                 </div>
               </div>
-              
+
               <div className="space-y-4 md:space-y-6">
                 {!data.pending || data.pending.length === 0 ? (
                   <div className="text-center py-8 bg-white rounded-lg border">
@@ -573,7 +569,6 @@ export default function AdminDashboard() {
                             <div className="text-gray-400">No Cover Image</div>
                           )}
                         </div>
-
                         {/* CONTENT */}
                         <div className="flex-1 p-4 md:p-6">
                           <h4 className="text-lg md:text-xl font-bold text-[#4a772e] mb-1">{item.title}</h4>
@@ -583,14 +578,13 @@ export default function AdminDashboard() {
                           <p className="text-sm text-gray-600 mb-3">
                             <span className="font-medium">Type:</span> {item.submission_type || 'Unknown'}
                           </p>
-
                           {/* CLICKABLE DOCUMENT */}
                           {item.file_url && (
                             <button
                               onClick={() => {
                                 const url = `http://localhost:8000${item.file_url}`;
                                 const ext = item.file_url.split('.').pop().toLowerCase();
-                                
+
                                 if (ext === 'pdf') {
                                   window.open(url, '_blank');
                                 } else {
@@ -606,7 +600,6 @@ export default function AdminDashboard() {
                               View Document
                             </button>
                           )}
-
                           {/* ACTION BUTTONS */}
                           <div className="flex flex-col sm:flex-row gap-2 mt-4">
                             <button
@@ -628,7 +621,6 @@ export default function AdminDashboard() {
                               Reject
                             </button>
                           </div>
-
                           {/* REJECT FEEDBACK */}
                           {selectedId === item.id && (
                             <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -677,31 +669,30 @@ export default function AdminDashboard() {
                   Total: {approvedBooks.length} books
                 </div>
               </div>
-
               {/* FILTERS */}
               <div className="mb-6 p-4 bg-white rounded-lg border">
                 <h4 className="font-bold text-[#4a772e] mb-3">Filter Books</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
-                  <input 
-                    placeholder="Search by title" 
+                  <input
+                    placeholder="Search by title"
                     value={filters.title}
                     onChange={(e) => handleFilterChange('title', e.target.value)}
                     className="p-2 border rounded text-sm focus:ring-2 focus:ring-[#4a772e] focus:border-transparent"
                   />
-                  <input 
-                    placeholder="University" 
+                  <input
+                    placeholder="University"
                     value={filters.university}
                     onChange={(e) => handleFilterChange('university', e.target.value)}
                     className="p-2 border rounded text-sm focus:ring-2 focus:ring-[#4a772e] focus:border-transparent"
                   />
-                  <input 
-                    placeholder="Author name" 
+                  <input
+                    placeholder="Author name"
                     value={filters.author}
                     onChange={(e) => handleFilterChange('author', e.target.value)}
                     className="p-2 border rounded text-sm focus:ring-2 focus:ring-[#4a772e] focus:border-transparent"
                   />
-                  <input 
-                    placeholder="Category" 
+                  <input
+                    placeholder="Category"
                     value={filters.category}
                     onChange={(e) => handleFilterChange('category', e.target.value)}
                     className="p-2 border rounded text-sm focus:ring-2 focus:ring-[#4a772e] focus:border-transparent"
@@ -722,14 +713,13 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               </div>
-
               {/* APPROVED BOOKS LIST */}
               <div className="space-y-4">
                 {approvedBooks.length === 0 ? (
                   <div className="text-center py-8 bg-white rounded-lg border">
                     <p className="text-gray-500">
-                      {Object.values(filters).some(f => f) 
-                        ? 'No books match your filters' 
+                      {Object.values(filters).some(f => f)
+                        ? 'No books match your filters'
                         : 'No approved books found'}
                     </p>
                     {Object.values(filters).some(f => f) && (
@@ -764,7 +754,6 @@ export default function AdminDashboard() {
                               </div>
                             )}
                           </div>
-
                           {/* Book Details */}
                           <div className="flex-1">
                             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-2">
@@ -779,7 +768,7 @@ export default function AdminDashboard() {
                                 Delete
                               </button>
                             </div>
-                            
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm mb-3">
                               <div>
                                 <span className="font-medium">Author:</span> {book.author || 'Unknown'}
@@ -808,7 +797,6 @@ export default function AdminDashboard() {
                                 </span>
                               </div>
                             </div>
-
                             <div className="flex flex-wrap items-center gap-3 md:gap-4 text-sm text-gray-600 mb-3">
                               <span className="flex items-center gap-1">
                                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -829,9 +817,8 @@ export default function AdminDashboard() {
                                 </span>
                               )}
                             </div>
-
                             <p className="text-sm text-gray-700 line-clamp-2 mb-3">{book.description || 'No description available'}</p>
-                            
+
                             {/* View Document Button */}
                             {book.file_url && (
                               <div className="mt-3">
@@ -910,11 +897,11 @@ export default function AdminDashboard() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Username <span className="text-red-500">*</span>
                         </label>
-                        <input 
+                        <input
                           type="text"
-                          placeholder="Username" 
-                          value={userForm.username} 
-                          onChange={e => setUserForm({ ...userForm, username: e.target.value })} 
+                          placeholder="Username"
+                          value={userForm.username}
+                          onChange={e => setUserForm({ ...userForm, username: e.target.value })}
                           className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4a772e] focus:border-transparent"
                           required
                         />
@@ -923,57 +910,57 @@ export default function AdminDashboard() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Email <span className="text-red-500">*</span>
                         </label>
-                        <input 
+                        <input
                           type="email"
-                          placeholder="Email address" 
-                          value={userForm.email} 
-                          onChange={e => setUserForm({ ...userForm, email: e.target.value })} 
+                          placeholder="Email address"
+                          value={userForm.email}
+                          onChange={e => setUserForm({ ...userForm, email: e.target.value })}
                           className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4a772e] focus:border-transparent"
                           required
                         />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-                        <input 
+                        <input
                           type="text"
-                          placeholder="First name" 
-                          value={userForm.first_name} 
-                          onChange={e => setUserForm({ ...userForm, first_name: e.target.value })} 
+                          placeholder="First name"
+                          value={userForm.first_name}
+                          onChange={e => setUserForm({ ...userForm, first_name: e.target.value })}
                           className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4a772e] focus:border-transparent"
                         />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                        <input 
+                        <input
                           type="text"
-                          placeholder="Last name" 
-                          value={userForm.last_name} 
-                          onChange={e => setUserForm({ ...userForm, last_name: e.target.value })} 
+                          placeholder="Last name"
+                          value={userForm.last_name}
+                          onChange={e => setUserForm({ ...userForm, last_name: e.target.value })}
                           className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4a772e] focus:border-transparent"
                         />
                       </div>
                     </div>
-                    
+
                     {/* Column 2 */}
                     <div className="space-y-3">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                        <input 
+                        <input
                           type="tel"
-                          placeholder="Phone number" 
-                          value={userForm.phone_number} 
-                          onChange={e => setUserForm({ ...userForm, phone_number: e.target.value })} 
+                          placeholder="Phone number"
+                          value={userForm.phone_number}
+                          onChange={e => setUserForm({ ...userForm, phone_number: e.target.value })}
                           className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4a772e] focus:border-transparent"
                         />
                       </div>
-                      
+
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           User Category <span className="text-red-500">*</span>
                         </label>
-                        <select 
-                          value={userForm.user_category} 
-                          onChange={e => setUserForm({ ...userForm, user_category: e.target.value, is_staff: e.target.value === 'admin' })} 
+                        <select
+                          value={userForm.user_category}
+                          onChange={e => setUserForm({ ...userForm, user_category: e.target.value, is_staff: e.target.value === 'admin' })}
                           className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4a772e] focus:border-transparent"
                         >
                           <option value="researcher">Researcher</option>
@@ -984,31 +971,31 @@ export default function AdminDashboard() {
                           <option value="innovator">Innovator</option>
                         </select>
                       </div>
-                      
+
                       {userForm.user_category === 'university' && (
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">University Name</label>
-                          <input 
+                          <input
                             type="text"
-                            placeholder="University name" 
-                            value={userForm.university_name} 
-                            onChange={e => setUserForm({ ...userForm, university_name: e.target.value })} 
+                            placeholder="University name"
+                            value={userForm.university_name}
+                            onChange={e => setUserForm({ ...userForm, university_name: e.target.value })}
                             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4a772e] focus:border-transparent"
                           />
                         </div>
                       )}
-                      
+
                       {!editingUser && (
                         <>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                               Password <span className="text-red-500">*</span>
                             </label>
-                            <input 
+                            <input
                               type="password"
-                              placeholder="Password" 
-                              value={userForm.password} 
-                              onChange={e => setUserForm({ ...userForm, password: e.target.value })} 
+                              placeholder="Password"
+                              value={userForm.password}
+                              onChange={e => setUserForm({ ...userForm, password: e.target.value })}
                               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4a772e] focus:border-transparent"
                               required
                             />
@@ -1017,35 +1004,35 @@ export default function AdminDashboard() {
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                               Confirm Password <span className="text-red-500">*</span>
                             </label>
-                            <input 
+                            <input
                               type="password"
-                              placeholder="Confirm password" 
-                              value={userForm.confirm_password} 
-                              onChange={e => setUserForm({ ...userForm, confirm_password: e.target.value })} 
+                              placeholder="Confirm password"
+                              value={userForm.confirm_password}
+                              onChange={e => setUserForm({ ...userForm, confirm_password: e.target.value })}
                               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4a772e] focus:border-transparent"
                               required
                             />
                           </div>
                         </>
                       )}
-                      
+
                       <div className="flex flex-wrap items-center gap-4 pt-2">
                         <label className="flex items-center gap-2">
-                          <input 
-                            type="checkbox" 
-                            checked={userForm.is_active} 
-                            onChange={e => setUserForm({ ...userForm, is_active: e.target.checked })} 
+                          <input
+                            type="checkbox"
+                            checked={userForm.is_active}
+                            onChange={e => setUserForm({ ...userForm, is_active: e.target.checked })}
                             className="w-4 h-4 text-[#4a772e] rounded focus:ring-[#4a772e]"
                           />
                           <span className="text-sm font-medium">Active Account</span>
                         </label>
-                        
+
                         {userForm.user_category === 'admin' && (
                           <label className="flex items-center gap-2">
-                            <input 
-                              type="checkbox" 
-                              checked={userForm.is_staff} 
-                              onChange={e => setUserForm({ ...userForm, is_staff: e.target.checked })} 
+                            <input
+                              type="checkbox"
+                              checked={userForm.is_staff}
+                              onChange={e => setUserForm({ ...userForm, is_staff: e.target.checked })}
                               className="w-4 h-4 text-[#4a772e] rounded focus:ring-[#4a772e]"
                             />
                             <span className="text-sm font-medium">Staff Access</span>
@@ -1054,9 +1041,9 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="mt-6 pt-4 border-t border-gray-200 flex flex-col sm:flex-row justify-end gap-3">
-                    <button 
+                    <button
                       onClick={() => {
                         setShowUserForm(false);
                         setEditingUser(null);
@@ -1073,13 +1060,13 @@ export default function AdminDashboard() {
                           is_active: true,
                           is_staff: false
                         });
-                      }} 
+                      }}
                       className="px-5 py-2 bg-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-400 transition-colors"
                     >
                       Cancel
                     </button>
-                    <button 
-                      onClick={editingUser ? handleUpdateUser : handleCreateUser} 
+                    <button
+                      onClick={editingUser ? handleUpdateUser : handleCreateUser}
                       className="px-5 py-2 bg-[#4a772e] text-white rounded-lg text-sm font-bold hover:bg-[#3a5f24] transition-colors"
                     >
                       {editingUser ? 'Update User' : 'Create User'}
@@ -1105,21 +1092,20 @@ export default function AdminDashboard() {
                               <h4 className="font-bold text-[#4a772e] text-lg">{user.username}</h4>
                               <p className="text-sm text-gray-600">{user.email}</p>
                             </div>
-                            
+
                             {/* Status Badges */}
                             <div className="flex flex-wrap gap-1">
-                              
                               {user.is_staff && (
                                 <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
                                   Staff
                                 </span>
                               )}
                               <span className="text-xs px-2 py-1 bg-purple-100 text-purple-800 rounded-full">
-                                {user.user_category }
+                                {user.user_category}
                               </span>
                             </div>
                           </div>
-                          
+
                           {/* User Details */}
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-gray-700">
                             <div>
@@ -1134,7 +1120,7 @@ export default function AdminDashboard() {
                               </div>
                             )}
                           </div>
-                          
+
                           {/* Dates */}
                           <div className="mt-2 text-xs text-gray-500">
                             <span>Joined: {format(new Date(user.date_joined), 'MMM d, yyyy')}</span>
@@ -1143,10 +1129,10 @@ export default function AdminDashboard() {
                             )}
                           </div>
                         </div>
-                        
+
                         {/* Action Buttons */}
                         <div className="flex gap-2 mt-3 md:mt-0">
-                          <button 
+                          <button
                             onClick={() => handleEditUser(user)}
                             className="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors flex items-center gap-1"
                           >
@@ -1155,7 +1141,7 @@ export default function AdminDashboard() {
                             </svg>
                             Edit
                           </button>
-                          <button 
+                          <button
                             onClick={() => handleDeleteUser(user.id, user.username)}
                             className="px-4 py-2 bg-red-50 text-red-700 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors flex items-center gap-1"
                           >
@@ -1209,7 +1195,7 @@ export default function AdminDashboard() {
                   <h4 className="text-lg font-bold text-[#4a772e] mb-4">
                     {editingEvent ? 'Edit Event' : 'Create New Event'}
                   </h4>
-                  
+
                   <div className="space-y-4">
                     {/* Photo Upload */}
                     <div>
@@ -1219,17 +1205,17 @@ export default function AdminDashboard() {
                       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                         {(eventForm.photoPreview || eventForm.photoUrl) ? (
                           <div className="relative">
-                            <img 
-                              src={eventForm.photoPreview || eventForm.photoUrl} 
-                              alt="Event preview" 
+                            <img
+                              src={eventForm.photoPreview || eventForm.photoUrl}
+                              alt="Event preview"
                               className="w-32 h-32 object-cover rounded-lg border"
                             />
                             <button
                               type="button"
                               onClick={() => {
-                                setEventForm(prev => ({ 
-                                  ...prev, 
-                                  photo: null, 
+                                setEventForm(prev => ({
+                                  ...prev,
+                                  photo: null,
                                   photoPreview: null,
                                   photoUrl: null
                                 }));
@@ -1242,7 +1228,7 @@ export default function AdminDashboard() {
                             </button>
                           </div>
                         ) : null}
-                        
+
                         <div className="flex-1">
                           <input
                             type="file"
@@ -1251,15 +1237,15 @@ export default function AdminDashboard() {
                             onChange={(e) => {
                               const file = e.target.files[0];
                               if (file) {
-                                if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                                if (file.size > 5 * 1024 * 1024) {
                                   alert('File size should be less than 5MB');
                                   return;
                                 }
                                 const previewUrl = URL.createObjectURL(file);
-                                setEventForm(prev => ({ 
-                                  ...prev, 
-                                  photo: file, 
-                                  photoPreview: previewUrl 
+                                setEventForm(prev => ({
+                                  ...prev,
+                                  photo: file,
+                                  photoPreview: previewUrl
                                 }));
                               }
                             }}
@@ -1296,7 +1282,7 @@ export default function AdminDashboard() {
                           required
                         />
                       </div>
-                      
+
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Date & Time <span className="text-red-500">*</span>
@@ -1309,7 +1295,7 @@ export default function AdminDashboard() {
                           required
                         />
                       </div>
-                      
+
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Location <span className="text-red-500">*</span>
@@ -1323,7 +1309,7 @@ export default function AdminDashboard() {
                           required
                         />
                       </div>
-                      
+
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Icon</label>
                         <select
@@ -1422,7 +1408,7 @@ export default function AdminDashboard() {
                             />
                           </div>
                         )}
-                        
+
                         <div className="flex-1 p-4">
                           <div className="flex flex-col md:flex-row md:items-start justify-between gap-3">
                             <div className="flex-1">
@@ -1432,7 +1418,7 @@ export default function AdminDashboard() {
                                 </span>
                                 <h4 className="font-bold text-[#4a772e] text-lg">{event.title}</h4>
                               </div>
-                              
+
                               <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm text-gray-700 mb-2">
                                 <span className="flex items-center gap-1">
                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1448,9 +1434,9 @@ export default function AdminDashboard() {
                                   {format(new Date(event.date), 'PPP p')}
                                 </span>
                               </div>
-                              
+
                               <p className="text-sm text-gray-700 line-clamp-2 mb-3">{event.description}</p>
-                              
+
                               {event.link && (
                                 <a
                                   href={event.link}
@@ -1465,7 +1451,7 @@ export default function AdminDashboard() {
                                 </a>
                               )}
                             </div>
-                            
+
                             {/* Action Buttons */}
                             <div className="flex gap-2 mt-3 md:mt-0">
                               <button
@@ -1501,35 +1487,50 @@ export default function AdminDashboard() {
         {/* ADMIN SIDEBAR MENU */}
         <div className="bg-white p-6 rounded-2xl shadow-xl space-y-4">
           <h3 className="text-xl font-bold text-[#4a772e] mb-4">Admin Tools</h3>
-  <button 
-    onClick={() => setActiveTab('pending')} 
-    className={`w-full py-3 px-4 text-left font-bold border rounded-lg transition flex items-center gap-3 ${activeTab === 'pending' ? 'bg-[#8c9c6f] text-white' : 'bg-white text-[#4a772e] border-[#8c9c6f] hover:bg-[#c4d5b0]'}`}
-  >
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-    Pending Books
-  </button>
-  <button 
-  onClick={() => window.location.href = '/admin-dashboard/pending-innovations'}
-  className="w-full py-3 px-4 text-left font-bold border rounded-lg transition flex items-center gap-3 bg-[#d8e5c7] text-[#4a772e] border-[#8c9c6f] hover:bg-[#c4d5b0]"
->
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-  Pending Innovations
-  </button>
-  <button 
-  onClick={() => window.location.href = '/admin-dashboard/pending-events'}
-  className="w-full py-3 px-4 text-left font-bold border rounded-lg transition flex items-center gap-3 bg-[#d8e5c7] text-[#4a772e] border-[#8c9c6f] hover:bg-[#c4d5b0]"
->
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-  Pending Events
-  </button>
-          <button 
-            onClick={() => setActiveTab('approved')} 
+
+          <button
+            onClick={() => setActiveTab('pending')}
+            className={`w-full py-3 px-4 text-left font-bold border rounded-lg transition flex items-center gap-3 ${activeTab === 'pending' ? 'bg-[#8c9c6f] text-white' : 'bg-white text-[#4a772e] border-[#8c9c6f] hover:bg-[#c4d5b0]'}`}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Pending Books
+          </button>
+
+          {/* NEW: Pending Research button */}
+          <button
+            onClick={() => window.location.href = 'admin-dashboard/pending-researches'}
+            className="w-full py-3 px-4 text-left font-bold border rounded-lg transition flex items-center gap-3 bg-[#d8e5c7] text-[#4a772e] border-[#8c9c6f] hover:bg-[#c4d5b0]"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+            Pending Research
+          </button>
+
+          <button
+            onClick={() => window.location.href = '/admin-dashboard/pending-innovations'}
+            className="w-full py-3 px-4 text-left font-bold border rounded-lg transition flex items-center gap-3 bg-[#d8e5c7] text-[#4a772e] border-[#8c9c6f] hover:bg-[#c4d5b0]"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Pending Innovations
+          </button>
+
+          <button
+            onClick={() => window.location.href = '/admin-dashboard/pending-events'}
+            className="w-full py-3 px-4 text-left font-bold border rounded-lg transition flex items-center gap-3 bg-[#d8e5c7] text-[#4a772e] border-[#8c9c6f] hover:bg-[#c4d5b0]"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Pending Events
+          </button>
+
+          <button
+            onClick={() => setActiveTab('approved')}
             className={`w-full py-3 px-4 text-left font-bold border rounded-lg transition flex items-center gap-3 ${activeTab === 'approved' ? 'bg-[#8c9c6f] text-white' : 'bg-[#d8e5c7] text-[#4a772e] border-[#8c9c6f] hover:bg-[#c4d5b0]'}`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1537,18 +1538,19 @@ export default function AdminDashboard() {
             </svg>
             Approved Books
           </button>
-           <button 
-  onClick={() => window.location.href = '/admin-dashboard/approved-innovation'}
-  className="w-full py-3 px-4 text-left font-bold border rounded-lg transition flex items-center gap-3 bg-[#d8e5c7] text-[#4a772e] border-[#8c9c6f] hover:bg-[#c4d5b0]"
->
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-  approved Innovations
-  </button>
-          
-          <button 
-            onClick={() => setActiveTab('users')} 
+
+          <button
+            onClick={() => window.location.href = '/admin-dashboard/approved-innovation'}
+            className="w-full py-3 px-4 text-left font-bold border rounded-lg transition flex items-center gap-3 bg-[#d8e5c7] text-[#4a772e] border-[#8c9c6f] hover:bg-[#c4d5b0]"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Approved Innovations
+          </button>
+
+          <button
+            onClick={() => setActiveTab('users')}
             className={`w-full py-3 px-4 text-left font-bold border rounded-lg transition flex items-center gap-3 ${activeTab === 'users' ? 'bg-[#8c9c6f] text-white' : 'bg-[#d8e5c7] text-[#4a772e] border-[#8c9c6f] hover:bg-[#c4d5b0]'}`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1556,8 +1558,9 @@ export default function AdminDashboard() {
             </svg>
             User Management
           </button>
-          <button 
-            onClick={() => setActiveTab('events')} 
+
+          <button
+            onClick={() => setActiveTab('events')}
             className={`w-full py-3 px-4 text-left font-bold border rounded-lg transition flex items-center gap-3 ${activeTab === 'events' ? 'bg-[#8c9c6f] text-white' : 'bg-[#d8e5c7] text-[#4a772e] border-[#8c9c6f] hover:bg-[#c4d5b0]'}`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
